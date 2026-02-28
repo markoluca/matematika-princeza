@@ -41,13 +41,14 @@ cursor:pointer;
 
 .instruction{
 font-size:18px;
-margin-top:10px;
+margin-top:15px;
 font-weight:bold;
 color:#444;
+line-height:1.5;
 }
 
 .question{
-font-size:26px;
+font-size:28px;
 margin:15px 0;
 min-height:40px;
 }
@@ -67,7 +68,7 @@ font-weight:bold;
 }
 
 .result-box{
-margin-top:15px;
+margin-top:20px;
 padding:15px;
 background:#fff0f6;
 border-radius:15px;
@@ -107,6 +108,7 @@ border-radius:8px;
 
 let correct="";
 let instructionText="";
+let explanationText="";
 let questionText="";
 
 let testCount=0;
@@ -143,6 +145,7 @@ let a=rand(0,20),b=rand(0,20);
 if(a+b>20) return newTask();
 correct=(a+b)+"";
 instructionText="Сабери бројеве.";
+explanationText="Израчунај збир и упиши резултат.";
 q=`${a} + ${b} = ?`;
 }
 
@@ -151,6 +154,7 @@ let a=rand(0,20),b=rand(0,20);
 if(b>a)[a,b]=[b,a];
 correct=(a-b)+"";
 instructionText="Одузми бројеве.";
+explanationText="Израчунај разлику и упиши резултат.";
 q=`${a} - ${b} = ?`;
 }
 
@@ -158,6 +162,7 @@ if(type==="numbers"){
 let s=rand(1,17);
 correct=(s+2)+"";
 instructionText="Попуни низ бројева.";
+explanationText="Погледај редослед бројева и упиши број који недостаје.";
 q=`${s}, ${s+1}, __ , ${s+3}`;
 }
 
@@ -165,76 +170,58 @@ if(type==="prevnext"){
 let n=rand(2,18);
 correct=(n-1)+"";
 instructionText="Напиши претходник датог броја.";
+explanationText="Претходник је број који долази пре датог броја.";
 q=`__, ${n}, ${n+1}`;
 }
 
 if(type==="compare"){
 let a=rand(0,20),b=rand(0,20);
 correct=(a>b?">":a<b?"<":"=");
-instructionText="Упиши знак >, < или =.";
+instructionText="Упореди бројеве.";
+explanationText="Упиши > ако је први број већи, < ако је мањи или = ако су једнаки.";
 q=`${a} ? ${b}`;
 }
 
 if(type==="even"){
-let variant=rand(1,4);
+instructionText="Напиши парне бројеве.";
+explanationText="Парни бројеви су дељиви са 2. Упиши их један за другим.";
+
+let variant=rand(1,2);
 
 if(variant===1){
-instructionText="Напиши све парне бројеве између 12 и 18 један за другим.";
 correct="1416";
 q="Који су парни бројеви између 12 и 18?";
 }
 
 if(variant===2){
-instructionText="Напиши све парне бројеве између 1 и 10 један за другим.";
 correct="2468";
 q="Који су парни бројеви између 1 и 10?";
-}
-
-if(variant===3){
-instructionText="Напиши највећи парни број друге десетице.";
-correct="20";
-q="Који је највећи парни број друге десетице?";
-}
-
-if(variant===4){
-instructionText="Напиши најмањи парни број прве десетице.";
-correct="2";
-q="Који је најмањи парни број прве десетице?";
 }
 }
 
 if(type==="odd"){
-let variant=rand(1,4);
+instructionText="Напиши непарне бројеве.";
+explanationText="Непарни бројеви нису дељиви са 2. Упиши их један за другим.";
+
+let variant=rand(1,2);
 
 if(variant===1){
-instructionText="Напиши све непарне бројеве између 1 и 10 један за другим.";
 correct="3579";
 q="Који су непарни бројеви између 1 и 10?";
 }
 
 if(variant===2){
-instructionText="Напиши све непарне бројеве између 11 и 19 један за другим.";
 correct="131517";
 q="Који су непарни бројеви између 11 и 19?";
-}
-
-if(variant===3){
-instructionText="Напиши највећи непарни број прве десетице.";
-correct="9";
-q="Који је највећи непарни број прве десетице?";
-}
-
-if(variant===4){
-instructionText="Напиши најмањи непарни број друге десетице.";
-correct="11";
-q="Који је најмањи непарни број друге десетице?";
 }
 }
 
 questionText=q;
 
-document.getElementById("instruction").innerText=
-`Задатак ${testCount+1}/20 – ${instructionText}`;
+document.getElementById("instruction").innerHTML =
+`Задатак ${testCount+1}/20<br>
+<b>${instructionText}</b><br>
+<span style="font-size:15px;color:#666">${explanationText}</span>`;
 
 document.getElementById("question").innerText=q;
 document.getElementById("answer").value="";
@@ -250,6 +237,7 @@ return arr.sort().join("");
 }
 
 function checkAnswer(){
+
 let user=document.getElementById("answer").value.trim();
 if(user==="") return;
 
@@ -279,7 +267,7 @@ testCount++;
 setTimeout(()=>{
 document.getElementById("feedback").innerText="";
 newTask();
-},800);
+},900);
 }
 
 function endTest(){
