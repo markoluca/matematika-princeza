@@ -123,8 +123,9 @@ button{
 
 let име="";
 let question=0;
-let limit=20; // повећан број питања
+let limit=20;
 let бодови=0;
+let locked=false;
 let used=new Set();
 
 let correctAnswer=null;
@@ -140,6 +141,7 @@ function startGame(){
  question=0;
  бодови=0;
  used.clear();
+ locked=false;
  document.getElementById("rezultatCard").style.display="none";
  nextQuestion();
 }
@@ -154,6 +156,8 @@ function nextQuestion(){
 
  if(question>=limit){ finish(); return; }
 
+ locked=false;
+
  document.getElementById("poruka").innerHTML="";
  document.getElementById("odgovorPolje").innerHTML="";
  correctAnswer=null;
@@ -163,15 +167,13 @@ function nextQuestion(){
  let tip=rand(1,8);
  let текст=(question+1)+". ";
 
- // ТЕЖЕ САБИРАЊЕ
  if(tip===1){
-  let a=rand(11,19);
+  let a=rand(12,19);
   let b=rand(1,20-a);
   correctAnswer=a+b;
   текст+="Израчунај: "+a+" + "+b+" = _";
  }
 
- // ТЕЖЕ ОДУЗИМАЊЕ
  if(tip===2){
   let a=rand(15,20);
   let b=rand(5,a-1);
@@ -179,7 +181,6 @@ function nextQuestion(){
   текст+="Израчунај: "+a+" − "+b+" = _";
  }
 
- // ТЕКСТУАЛНИ (КОМПЛЕТНО РЕШЕЊЕ)
  if(tip===3){
   let a=rand(10,18);
   let b=rand(1,20-a);
@@ -189,37 +190,32 @@ function nextQuestion(){
   ". Напиши комплетно решење.";
  }
 
- // ПАРНИ (ПРЕЦИЗНО)
  if(tip===4){
   correctArray=[12,14,16];
   текст+="Напиши све парне бројеве између 10 и 18 (без 10 и 18).";
  }
 
- // НИЗ +2
  if(tip===5){
   let start=rand(8,14);
   correctAnswer=start+6;
   текст+="Настави низ: "+start+", "+(start+2)+", "+(start+4)+", _";
  }
 
- // НИЗ -2
  if(tip===6){
   let start=rand(16,20);
   correctAnswer=start-6;
   текст+="Настави низ: "+start+", "+(start-2)+", "+(start-4)+", _";
  }
 
- // НИЗ +3
  if(tip===7){
-  let start=rand(5,10);
+  let start=rand(6,10);
   correctAnswer=start+9;
   текст+="Настави низ: "+start+", "+(start+3)+", "+(start+6)+", _";
  }
 
- // ПОРЕЂЕЊЕ БРОЈЕВА
  if(tip===8){
-  let a=rand(10,20);
-  let b=rand(10,20);
+  let a=rand(12,20);
+  let b=rand(12,20);
   if(a>b) correctAnswer=">";
   if(a<b) correctAnswer="<";
   if(a===b) correctAnswer="=";
@@ -233,12 +229,8 @@ function nextQuestion(){
  let inputPolje=document.getElementById("odg");
 
  inputPolje.addEventListener("keydown",function(e){
-   if(e.key==="Enter"){ checkAnswer(); }
- });
-
- inputPolje.addEventListener("input",function(){
-   if(correctAnswer!==null && correctFullExpression===null && correctArray===null){
-     if(this.value.length>=1){ checkAnswer(); }
+   if(e.key==="Enter" && !locked){
+       checkAnswer();
    }
  });
 
@@ -246,6 +238,9 @@ function nextQuestion(){
 }
 
 function checkAnswer(){
+
+ if(locked) return;
+ locked=true;
 
  let input=document.getElementById("odg").value.replace(/\s/g,"");
 
