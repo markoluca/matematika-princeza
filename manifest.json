@@ -1,15 +1,8 @@
 {
-  "name": "Matematika Princeza PRO",
-  "short_name": "Princeza PRO",
+  "name": "Математичка авантура",
+  "short_name": "Математика",
   "start_url": "index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#ff69b4",
-  "icons": [
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/616/616408.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    }
-  ]
+  "background_color": "#f1f5f9",
+  "theme_color": "#2563eb"
 }
