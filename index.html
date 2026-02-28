@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>👑 Лучица и математика </title>
+<title>👑 Lucica matematikica </title>
 
 <style>
 body{
@@ -22,24 +22,30 @@ header{
 
 .avatar{font-size:60px;margin-top:10px;}
 
-.container{padding:20px;max-width:800px;margin:auto;}
+.container{padding:20px;max-width:850px;margin:auto;}
 
 .card{
  background:white;
- padding:20px;
+ padding:25px;
  border-radius:25px;
  box-shadow:0 10px 25px rgba(0,0,0,0.1);
  margin-bottom:20px;
 }
 
 input{
- padding:10px;
- font-size:18px;
- width:60px;
- border-radius:10px;
- border:2px solid #f9a8d4;
+ padding:12px;
+ font-size:20px;
+ font-weight:bold;
+ width:70px;
+ border-radius:12px;
+ border:2px solid #f472b6;
  text-align:center;
  margin:5px;
+}
+
+.bold{
+ font-weight:bold;
+ font-size:20px;
 }
 
 button{
@@ -52,7 +58,11 @@ button{
  margin:5px;
 }
 
-.krune{font-size:18px;margin:10px;}
+.krune{
+ font-size:18px;
+ font-weight:bold;
+ margin:10px;
+}
 
 .sparkle{
  position:absolute;
@@ -92,9 +102,9 @@ td,th{
 <div class="krune" id="info"></div>
 
 <div class="card">
- <div id="zadatak">Добродошла у Premium авантуру!</div>
+ <div id="zadatak" class="bold"></div>
  <div id="odgovorPolje"></div>
- <div id="poruka"></div>
+ <div id="poruka" class="bold"></div>
 </div>
 
 <div class="card" id="rezultatCard" style="display:none;"></div>
@@ -136,7 +146,9 @@ function startGame(){
 
 function updateInfo(){
  document.getElementById("info").innerHTML=
- "Ниво: "+level+" | Питање: "+(question+1)+"/10 | Круне: "+krune+" 👑";
+ "Ниво: "+level+
+ " | Питање: "+(question+1)+"/10"+
+ " | Круне: "+krune+" 👑";
 }
 
 function nextQuestion(){
@@ -149,37 +161,40 @@ function nextQuestion(){
  document.getElementById("odgovorPolje").innerHTML="";
  tacni=[];
 
- let type=Math.floor(Math.random()*3);
+ let type=Math.floor(Math.random()*2);
  let tekst=(question+1)+". ";
 
+ // TEKSTUALNI SAB / ODUZ
  if(type===0){
+  let a=rand(10+level*2);
+  let b=rand(10+level*2);
+  let sabiranje=Math.random()<0.5;
+
+  if(sabiranje){
+    tacni=[a,"+",b,a+b];
+    tekst+="Принцеза има <b>"+a+
+    "</b> круна и добила је <b>"+b+
+    "</b>. Попуни решење:";
+  }else{
+    tacni=[a,"-",b,a-b];
+    tekst+="Принцеза је имала <b>"+a+
+    "</b> цветова и поклонила <b>"+b+
+    "</b>. Попуни решење:";
+  }
+
+  document.getElementById("odgovorPolje").innerHTML=
+  `<input id="b0"> <input id="b1"> <input id="b2"> = <input id="b3">`;
+ }
+
+ // PARNE
+ if(type===1){
   tekst+="Напиши све парне бројеве прве десетице.";
   tacni=[2,4,6,8];
   for(let i=0;i<4;i++){
    document.getElementById("odgovorPolje").innerHTML+=
    `<input id="b${i}"> , `;
   }
-  document.getElementById("odgovorPolje").innerHTML+="10";
- }
-
- if(type===1){
-  let a=rand(10+level*2);
-  let b=rand(20-a);
-  tacni=[a,b,a+b];
-  tekst+="Принцеза има "+a+" круна. Добила је "+b+
-  ". Попуни:";
-  document.getElementById("odgovorPolje").innerHTML=
-  `<input id="b0"> + <input id="b1"> = <input id="b2">`;
- }
-
- if(type===2){
-  let a=rand(12+level*2);
-  let b=rand(a-1);
-  tacni=[a,b,a-b];
-  tekst+="Принцеза је имала "+a+" цветова. Поклонила "+b+
-  ". Попуни:";
-  document.getElementById("odgovorPolje").innerHTML=
-  `<input id="b0"> - <input id="b1"> = <input id="b2">`;
+  document.getElementById("odgovorPolje").innerHTML+="<b>10</b>";
  }
 
  document.getElementById("zadatak").innerHTML=tekst;
@@ -197,12 +212,13 @@ function proveri(){
  let unosi=[];
  for(let i=0;i<inputs.length;i++){
   if(inputs[i].value==="") return;
-  unosi.push(parseInt(inputs[i].value));
+  unosi.push(inputs[i].value);
  }
 
  let tacno=true;
+
  for(let i=0;i<tacni.length;i++){
-  if(unosi[i]!==tacni[i]) tacno=false;
+  if(unosi[i]!=tacni[i]) tacno=false;
  }
 
  if(tacno){
@@ -211,7 +227,7 @@ function proveri(){
   document.getElementById("poruka").innerHTML="Браво! 👑";
  }else{
   document.getElementById("poruka").innerHTML=
-  "Нетачно ❌<br>Тачно: "+tacni.join(" ");
+  "Нетачно ❌<br>Тачно решење: <b>"+tacni.join(" ")+"</b>";
  }
 
  question++;
@@ -237,10 +253,6 @@ function finish(){
  if(krune>=20) titula="Велика принцеза 👑✨";
  if(krune>=28) titula="КРАЉИЦА МАТЕМАТИКЕ 👑🏆";
 
- if(titula.includes("КРАЉИЦА")){
-  for(let i=0;i<10;i++) sparkle();
- }
-
  bestScores.push({ime:ime,krune:krune});
  bestScores.sort((a,b)=>b.krune-a.krune);
  bestScores=bestScores.slice(0,5);
@@ -249,28 +261,16 @@ function finish(){
 
  document.getElementById("rezultatCard").innerHTML=
  "<h3>👑 КРАЈ PREMIUM ИЗАЗОВА 👑</h3>"+
- "Освојене круне: "+krune+
- "<br>"+titula+
- "<br><br><button onclick='printDiploma()'>🎓 Диплома</button>";
+ "Освојене круне: <b>"+krune+"</b><br>"+
+ "<b>"+titula+"</b>";
 }
 
 function updateTable(){
  let tbody=document.getElementById("scoreTable");
  tbody.innerHTML="";
  bestScores.forEach(s=>{
-  tbody.innerHTML+=`<tr><td>${s.ime}</td><td>${s.krune}</td></tr>`;
+  tbody.innerHTML+=`<tr><td>${s.ime}</td><td><b>${s.krune}</b></td></tr>`;
  });
-}
-
-function printDiploma(){
- let w=window.open("");
- w.document.write(`
- <h1>🎓 ДИПЛОМА 🎓</h1>
- <h2>${ime}</h2>
- <p>Освојене круне: ${krune}</p>
- <h2>КРАЉЕВСКИ УСПЕХ 👑</h2>
- `);
- w.print();
 }
 
 function sparkle(){
