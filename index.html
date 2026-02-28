@@ -3,15 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>👑 Принцезин велики математички изазов</title>
+<title>👑 Лучица и математика </title>
 
 <style>
-:root{
- --primary:#d946ef;
- --bg:#fdf2f8;
- --card:#ffffff;
-}
-
 body{
  margin:0;
  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
@@ -20,34 +14,32 @@ body{
 }
 
 header{
- background:var(--primary);
+ background:#c026d3;
  color:white;
- padding:18px;
+ padding:20px;
  font-size:22px;
 }
 
-.avatar{
- font-size:60px;
- margin-top:10px;
-}
+.avatar{font-size:60px;margin-top:10px;}
 
-.krune{
- font-size:20px;
- margin-top:10px;
-}
-
-.container{
- padding:20px;
- max-width:650px;
- margin:auto;
-}
+.container{padding:20px;max-width:800px;margin:auto;}
 
 .card{
- background:var(--card);
+ background:white;
  padding:20px;
  border-radius:25px;
  box-shadow:0 10px 25px rgba(0,0,0,0.1);
  margin-bottom:20px;
+}
+
+input{
+ padding:10px;
+ font-size:18px;
+ width:60px;
+ border-radius:10px;
+ border:2px solid #f9a8d4;
+ text-align:center;
+ margin:5px;
 }
 
 button{
@@ -55,248 +47,243 @@ button{
  font-size:16px;
  border-radius:20px;
  border:none;
- background:var(--primary);
+ background:#d946ef;
  color:white;
- margin-top:10px;
+ margin:5px;
 }
 
-input{
- padding:12px;
- font-size:18px;
- width:80%;
- border-radius:15px;
- border:2px solid #f9a8d4;
- text-align:center;
-}
-
-#poruka{
- font-weight:bold;
- margin-top:10px;
- min-height:40px;
-}
-
-.diploma{
- border:4px dashed #d946ef;
- padding:30px;
- border-radius:25px;
- background:white;
- margin-top:20px;
-}
+.krune{font-size:18px;margin:10px;}
 
 .sparkle{
  position:absolute;
- font-size:22px;
+ font-size:30px;
  animation:float 1s ease-out forwards;
 }
 
 @keyframes float{
  from{transform:translateY(0);opacity:1;}
- to{transform:translateY(-60px);opacity:0;}
+ to{transform:translateY(-80px);opacity:0;}
+}
+
+table{
+ width:100%;
+ border-collapse:collapse;
+}
+
+td,th{
+ border:1px solid #ddd;
+ padding:8px;
 }
 </style>
 </head>
 
 <body>
 
-<header>👑 Принцезин велики математички изазов ✨</header>
+<header>👑 Princess Math Premium 👑</header>
 <div class="avatar">👸🏰✨</div>
 
 <div class="container">
 
 <div class="card">
- <input id="ime" placeholder="Унеси име принцезе">
- <button onclick="startGame()">Започни краљевски изазов</button>
+ <input id="ime" placeholder="Име принцезе">
+ <button onclick="startGame()">Започни Premium изазов</button>
 </div>
 
-<div class="krune" id="krune">Круне: 0 👑</div>
+<div class="krune" id="info"></div>
 
 <div class="card">
- <div id="zadatak">Кликни да почнеш</div>
- <input id="odgovor" onkeyup="autoCheck(event)">
+ <div id="zadatak">Добродошла у Premium авантуру!</div>
+ <div id="odgovorPolje"></div>
  <div id="poruka"></div>
 </div>
 
-<div class="card" id="resultCard" style="display:none;">
- <h3>👑 Крај изазова 👑</h3>
- <div id="resultText"></div>
-</div>
+<div class="card" id="rezultatCard" style="display:none;"></div>
 
-<div class="card" id="diplomaCard" style="display:none;">
- <div class="diploma" id="diplomaContent">
-   <h2>🎓 ДИПЛОМА 🎓</h2>
-   <p>Овом дипломом се потврђује да је</p>
-   <h1 id="imeDiploma"></h1>
-   <p>успешно завршила</p>
-   <h3>Принцезин велики математички изазов</h3>
-   <h2 id="titulaDiploma"></h2>
-   <p id="kruneDiploma"></p>
-   <p>👑 Честитамо! 👑</p>
- </div>
- <button onclick="window.print()">Одштампај диплому</button>
+<div class="card">
+ <h3>🏆 Најбољи резултати</h3>
+ <table>
+  <thead>
+   <tr><th>Име</th><th>Круне</th></tr>
+  </thead>
+  <tbody id="scoreTable"></tbody>
+ </table>
 </div>
 
 </div>
 
 <script>
-let correctAnswer;
-let explanation="";
-let correct=0;
-let wrong=0;
-let count=0;
-let limit=15;
+let ime="";
+let level=1;
+let question=0;
 let krune=0;
-let imeDeteta="";
+let correct=0;
+let limit=10;
+let tacni=[];
+let bestScores=JSON.parse(localStorage.getItem("princessScores"))||[];
 
 function rand(max){return Math.floor(Math.random()*max)+1;}
 
 function startGame(){
- imeDeteta=document.getElementById("ime").value || "Мала принцеза";
- correct=0;
- wrong=0;
- count=0;
+ ime=document.getElementById("ime").value||"Принцеза";
+ level=1;
  krune=0;
- updateKrune();
- document.getElementById("resultCard").style.display="none";
- document.getElementById("diplomaCard").style.display="none";
+ correct=0;
+ question=0;
+ updateInfo();
+ document.getElementById("rezultatCard").style.display="none";
  nextQuestion();
 }
 
-function updateKrune(){
- document.getElementById("krune").innerHTML="Круне: "+krune+" 👑";
+function updateInfo(){
+ document.getElementById("info").innerHTML=
+ "Ниво: "+level+" | Питање: "+(question+1)+"/10 | Круне: "+krune+" 👑";
 }
 
 function nextQuestion(){
- if(count>=limit){
-  finish();
+ if(question>=limit){
+  levelUp();
   return;
  }
 
- document.getElementById("odgovor").value="";
  document.getElementById("poruka").innerHTML="";
+ document.getElementById("odgovorPolje").innerHTML="";
+ tacni=[];
 
- let type=Math.floor(Math.random()*5);
- let text=(count+1)+". ";
+ let type=Math.floor(Math.random()*3);
+ let tekst=(question+1)+". ";
 
  if(type===0){
-  let a=rand(10)+5;
-  let b=rand(20-a);
-  correctAnswer=a+"+"+b+"="+(a+b);
-  explanation=a+" + "+b+" = "+(a+b);
-  text+="Принцеза има "+a+" круна. Добила је још "+b+
-  ". Напиши цело решење.";
+  tekst+="Напиши све парне бројеве прве десетице.";
+  tacni=[2,4,6,8];
+  for(let i=0;i<4;i++){
+   document.getElementById("odgovorPolje").innerHTML+=
+   `<input id="b${i}"> , `;
+  }
+  document.getElementById("odgovorPolje").innerHTML+="10";
  }
 
  if(type===1){
-  let a=rand(10)+8;
-  let b=rand(a-1)+1;
-  correctAnswer=a+"-"+b+"="+(a-b);
-  explanation=a+" - "+b+" = "+(a-b);
-  text+="Принцеза је имала "+a+" цветова. Поклонила је "+b+
-  ". Напиши цело решење.";
+  let a=rand(10+level*2);
+  let b=rand(20-a);
+  tacni=[a,b,a+b];
+  tekst+="Принцеза има "+a+" круна. Добила је "+b+
+  ". Попуни:";
+  document.getElementById("odgovorPolje").innerHTML=
+  `<input id="b0"> + <input id="b1"> = <input id="b2">`;
  }
 
  if(type===2){
-  let niz=[2,4,6,8,10];
-  correctAnswer="246810";
-  explanation="Парни бројеви су: 2 4 6 8 10";
-  text+="Напиши све парне бројеве прве десетице без размака.";
+  let a=rand(12+level*2);
+  let b=rand(a-1);
+  tacni=[a,b,a-b];
+  tekst+="Принцеза је имала "+a+" цветова. Поклонила "+b+
+  ". Попуни:";
+  document.getElementById("odgovorPolje").innerHTML=
+  `<input id="b0"> - <input id="b1"> = <input id="b2">`;
  }
 
- if(type===3){
-  let n=rand(18)+1;
-  correctAnswer=(n+1).toString();
-  explanation="Број после "+n+" је "+(n+1);
-  text+="Који број долази после "+n+"?";
- }
+ document.getElementById("zadatak").innerHTML=tekst;
 
- if(type===4){
-  let start=rand(8)+2;
-  correctAnswer=(start+6).toString();
-  explanation="Низ расте за 2. Следећи број је "+(start+6);
-  text+="Настави низ: "+start+", "+(start+2)+", "+(start+4)+", ?";
- }
+ setTimeout(()=>{
+  document.querySelectorAll("#odgovorPolje input")
+  .forEach(el=>el.addEventListener("change",proveri));
+ },100);
 
- document.getElementById("zadatak").innerHTML=text;
+ updateInfo();
 }
 
-function autoCheck(e){
- if(e.key==="Enter"){
-  checkAnswer();
+function proveri(){
+ let inputs=document.querySelectorAll("#odgovorPolje input");
+ let unosi=[];
+ for(let i=0;i<inputs.length;i++){
+  if(inputs[i].value==="") return;
+  unosi.push(parseInt(inputs[i].value));
  }
-}
 
-function normalize(str){
- return str.replace(/\s+/g,"").toLowerCase();
-}
-
-function checkAnswer(){
- let user=normalize(document.getElementById("odgovor").value);
- let tacno=false;
-
- if(user===normalize(correctAnswer)){
-  tacno=true;
+ let tacno=true;
+ for(let i=0;i<tacni.length;i++){
+  if(unosi[i]!==tacni[i]) tacno=false;
  }
 
  if(tacno){
-  correct++;
-  krune++;
-  updateKrune();
-  showMessage(true);
- }else{
-  wrong++;
-  showMessage(false);
- }
-
- count++;
- setTimeout(nextQuestion,2000);
-}
-
-function showMessage(ok){
- let msg=document.getElementById("poruka");
-
- if(ok){
-  msg.style.color="green";
-  msg.innerHTML="Браво! Освојила си круну! 👑";
+  krune++; correct++;
   sparkle();
+  document.getElementById("poruka").innerHTML="Браво! 👑";
  }else{
-  msg.style.color="red";
-  msg.innerHTML="Нетачно ❌<br>Тачно решење: "+correctAnswer+
-  "<br>"+explanation;
+  document.getElementById("poruka").innerHTML=
+  "Нетачно ❌<br>Тачно: "+tacni.join(" ");
  }
+
+ question++;
+ setTimeout(nextQuestion,1500);
 }
 
-function sparkle(){
- for(let i=0;i<6;i++){
-  let s=document.createElement("div");
-  s.className="sparkle";
-  s.innerHTML="👑";
-  s.style.left=Math.random()*90+"%";
-  s.style.top="50%";
-  document.body.appendChild(s);
-  setTimeout(()=>s.remove(),1000);
+function levelUp(){
+ if(level<3){
+  level++;
+  question=0;
+  document.getElementById("poruka").innerHTML=
+  "🎉 Прелазиш на ниво "+level+"!";
+  setTimeout(nextQuestion,2000);
+ }else{
+  finish();
  }
 }
 
 function finish(){
- document.getElementById("resultCard").style.display="block";
+ document.getElementById("rezultatCard").style.display="block";
 
  let titula="Мала принцеза 👑";
- if(krune>=13) titula="Велика принцеза 👑✨";
- if(krune===15) titula="КРАЉИЦА МАТЕМАТИКЕ 👑🏆";
+ if(krune>=20) titula="Велика принцеза 👑✨";
+ if(krune>=28) titula="КРАЉИЦА МАТЕМАТИКЕ 👑🏆";
 
- document.getElementById("resultText").innerHTML=
+ if(titula.includes("КРАЉИЦА")){
+  for(let i=0;i<10;i++) sparkle();
+ }
+
+ bestScores.push({ime:ime,krune:krune});
+ bestScores.sort((a,b)=>b.krune-a.krune);
+ bestScores=bestScores.slice(0,5);
+ localStorage.setItem("princessScores",JSON.stringify(bestScores));
+ updateTable();
+
+ document.getElementById("rezultatCard").innerHTML=
+ "<h3>👑 КРАЈ PREMIUM ИЗАЗОВА 👑</h3>"+
  "Освојене круне: "+krune+
- "<br>Тачни: "+correct+
- "<br>Погрешни: "+wrong+
- "<br><br>"+titula;
-
- // DIPLOMA
- document.getElementById("diplomaCard").style.display="block";
- document.getElementById("imeDiploma").innerText=imeDeteta;
- document.getElementById("titulaDiploma").innerText=titula;
- document.getElementById("kruneDiploma").innerText=
- "Освојене круне: "+krune;
+ "<br>"+titula+
+ "<br><br><button onclick='printDiploma()'>🎓 Диплома</button>";
 }
+
+function updateTable(){
+ let tbody=document.getElementById("scoreTable");
+ tbody.innerHTML="";
+ bestScores.forEach(s=>{
+  tbody.innerHTML+=`<tr><td>${s.ime}</td><td>${s.krune}</td></tr>`;
+ });
+}
+
+function printDiploma(){
+ let w=window.open("");
+ w.document.write(`
+ <h1>🎓 ДИПЛОМА 🎓</h1>
+ <h2>${ime}</h2>
+ <p>Освојене круне: ${krune}</p>
+ <h2>КРАЉЕВСКИ УСПЕХ 👑</h2>
+ `);
+ w.print();
+}
+
+function sparkle(){
+ let s=document.createElement("div");
+ s.className="sparkle";
+ s.innerHTML="👑";
+ s.style.left=Math.random()*90+"%";
+ s.style.top="50%";
+ document.body.appendChild(s);
+ setTimeout(()=>s.remove(),1000);
+}
+
+updateTable();
 </script>
 
 </body>
