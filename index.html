@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Математичка Принцеза</title>
+<title>Математичка Принцеза – Тест</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#ff69b4">
@@ -11,15 +11,11 @@
 <style>
 body{
 font-family:'Arial Rounded MT Bold', Arial, sans-serif;
+background:linear-gradient(#ffe6f2,#fff4cc);
 margin:0;
 padding:20px;
 text-align:center;
-transition:0.4s;
 }
-
-.rose{background:linear-gradient(#ffe6f2,#fff4cc);}
-.purple{background:linear-gradient(#f3e6ff,#e6ccff);}
-.mint{background:linear-gradient(#e6fff7,#ccfff2);}
 
 h1{color:#d63384;}
 
@@ -32,36 +28,21 @@ padding:25px;
 box-shadow:0 15px 30px rgba(0,0,0,0.15);
 }
 
-.category-grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-margin-bottom:15px;
-}
-
-.cat-btn{
-padding:12px;
+button{
+padding:10px 15px;
 border:none;
-border-radius:15px;
-font-size:14px;
+border-radius:12px;
 font-weight:bold;
 cursor:pointer;
+background:#ff69b4;
 color:white;
-transition:0.2s;
+margin:5px;
 }
 
-.cat-btn:hover{transform:scale(1.05);}
-
-.add{background:#ff6b9d;}
-.sub{background:#845ec2;}
-.first{background:#ffc75f;}
-.second{background:#00c9a7;}
-.prev{background:#ff9671;}
-.compare{background:#4d8076;}
-
 .question{
-font-size:32px;
+font-size:28px;
 margin:20px 0;
+min-height:40px;
 }
 
 input{
@@ -73,215 +54,179 @@ border:3px solid #ccc;
 text-align:center;
 }
 
-.correct{border-color:#28a745;}
-.wrong{border-color:#dc3545;}
-
-.feedback{height:24px;font-weight:bold;}
-
-.progress{
-height:12px;
-background:#eee;
-border-radius:20px;
-margin-top:10px;
-overflow:hidden;
+.feedback{
+height:24px;
+font-weight:bold;
 }
 
-.progress-bar{
-height:12px;
-background:#ff69b4;
-width:0%;
-transition:0.4s;
+.result-box{
+margin-top:15px;
+padding:15px;
+background:#fff0f6;
+border-radius:15px;
+display:none;
 }
 
-.badges{margin-top:10px;font-size:20px;}
-.map{margin-top:10px;font-size:18px;}
-
-.theme-select{margin-bottom:10px;}
+.history{
+margin-top:15px;
+font-size:14px;
+text-align:left;
+}
 </style>
 </head>
 
-<body class="rose">
+<body>
 
 <h1>👑 Математичка Принцеза</h1>
 
 <div class="container">
 <div class="card">
 
-<input type="text" id="ime" placeholder="Унеси име">
-<button onclick="sacuvajIme()">Сачувај</button>
-
-<h3 id="pozdrav"></h3>
-
-<div class="theme-select">
-Тема:
-<select onchange="promeniTemu(this.value)">
-<option value="rose">Розе</option>
-<option value="purple">Љубичаста</option>
-<option value="mint">Минт</option>
-</select>
-</div>
-
-<div class="category-grid">
-<button class="cat-btn add" onclick="setCategory('add')">Сабирање</button>
-<button class="cat-btn sub" onclick="setCategory('sub')">Одузимање</button>
-<button class="cat-btn first" onclick="setCategory('first10')">Прва десетица</button>
-<button class="cat-btn second" onclick="setCategory('second10')">Друга десетица</button>
-<button class="cat-btn prev" onclick="setCategory('prevnext')">Претходник/Следб.</button>
-<button class="cat-btn compare" onclick="setCategory('compare')">Упореди</button>
-</div>
+<button onclick="startTest()">Покрени тест (20 задатака)</button>
 
 <div class="question" id="question"></div>
+
 <input type="text" id="answer" oninput="checkAnswer()">
 
 <div class="feedback" id="feedback"></div>
 
-<p>Звездице: <span id="stars">0</span> ⭐ | Ниво: <span id="level">1</span></p>
+<div class="result-box" id="resultBox"></div>
 
-<div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-
-<div class="badges" id="badges"></div>
-<div class="map" id="map"></div>
+<div class="history" id="history"></div>
 
 </div>
 </div>
 
 <script>
-let category="add";
 let correct;
-let stars=parseInt(localStorage.getItem("stars")||0);
-let level=parseInt(localStorage.getItem("level")||1);
-let correctStreak=0;
-let wrongStreak=0;
-let difficulty=1;
+let testCount=0;
+let testCorrect=0;
+let totalQuestions=20;
+let activeTest=false;
 
-ucitaj();
-
-function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
-
-function sacuvajIme(){
-let ime=document.getElementById("ime").value;
-localStorage.setItem("ime",ime);
-document.getElementById("pozdrav").innerText="Добро дошла, "+ime+" 👑";
+function rand(min,max){
+return Math.floor(Math.random()*(max-min+1))+min;
 }
 
-function ucitaj(){
-let ime=localStorage.getItem("ime");
-if(ime) document.getElementById("pozdrav").innerText="Добро дошла, "+ime+" 👑";
-updateUI();
-}
-
-function promeniTemu(t){
-document.body.className=t;
-}
-
-function setCategory(cat){category=cat;newTask();}
-
-function updateUI(){
-document.getElementById("stars").innerText=stars;
-document.getElementById("level").innerText=level;
-document.getElementById("progressBar").style.width=(stars%10)*10+"%";
-updateBadges();
-updateMap();
-}
-
-function updateBadges(){
-let html="";
-for(let i=0;i<Math.floor(stars/10);i++) html+="👑 ";
-document.getElementById("badges").innerHTML=html;
-}
-
-function updateMap(){
-let html="Напредак: ";
-for(let i=1;i<=10;i++) html+= i<=level?"⭐ ":"☆ ";
-document.getElementById("map").innerHTML=html;
-}
-
-function adjustDifficulty(){
-if(correctStreak>=3 && difficulty<3){difficulty++;correctStreak=0;}
-if(wrongStreak>=2 && difficulty>1){difficulty--;wrongStreak=0;}
+function startTest(){
+testCount=0;
+testCorrect=0;
+activeTest=true;
+document.getElementById("resultBox").style.display="none";
+document.getElementById("feedback").innerText="";
+newTask();
 }
 
 function newTask(){
-let max=difficulty===1?10:20;
+
+if(testCount>=totalQuestions){
+endTest();
+return;
+}
+
+let types=["add","sub","numbers","prevnext","compare"];
+let type=types[rand(0,types.length-1)];
 let q="";
 
-if(category==="add"){
-let a=rand(0,max),b=rand(0,max);
+if(type==="add"){
+let a=rand(0,20), b=rand(0,20);
 if(a+b>20) return newTask();
 correct=a+b;
 q=`${a} + ${b} = ?`;
 }
 
-if(category==="sub"){
-let a=rand(0,max),b=rand(0,max);
+if(type==="sub"){
+let a=rand(0,20), b=rand(0,20);
 if(b>a)[a,b]=[b,a];
 correct=a-b;
 q=`${a} - ${b} = ?`;
 }
 
-if(category==="first10"){
-let s=difficulty===1?rand(0,5):rand(0,7);
+if(type==="numbers"){
+let s=rand(1,17);
 correct=s+2;
 q=`${s}, ${s+1}, __ , ${s+3}`;
 }
 
-if(category==="second10"){
-let s=difficulty===1?rand(10,15):rand(10,17);
-correct=s+2;
-q=`${s}, ${s+1}, __ , ${s+3}`;
-}
-
-if(category==="prevnext"){
-let n=difficulty===1?rand(2,10):rand(5,18);
+if(type==="prevnext"){
+let n=rand(2,18);
 correct=n-1;
 q=`__, ${n}, ${n+1}`;
 }
 
-if(category==="compare"){
-let a=rand(0,max),b=rand(0,max);
+if(type==="compare"){
+let a=rand(0,20), b=rand(0,20);
 correct=a>b?">":a<b?"<":"=";
 q=`${a} ? ${b}`;
 }
 
-document.getElementById("question").innerText=q;
+document.getElementById("question").innerText=
+`Задатак ${testCount+1}/20: ${q}`;
+
 document.getElementById("answer").value="";
-document.getElementById("feedback").innerText="";
-document.getElementById("answer").className="";
 }
 
 function checkAnswer(){
+if(!activeTest) return;
+
 let user=document.getElementById("answer").value;
 
 if(user==correct){
-stars++;
-correctStreak++;
-wrongStreak=0;
-
-if(stars%30===0){
-level++;
-alert("Браво! Нови ниво 🎉");
-}
-
-localStorage.setItem("stars",stars);
-localStorage.setItem("level",level);
-
-adjustDifficulty();
-updateUI();
-
-document.getElementById("answer").className="correct";
+testCorrect++;
 document.getElementById("feedback").innerText="Браво! 🌸";
-
-setTimeout(newTask,800);
 }else{
-wrongStreak++;
-correctStreak=0;
-adjustDifficulty();
-document.getElementById("answer").className="wrong";
-document.getElementById("feedback").innerText="Покушај поново";
-}
+document.getElementById("feedback").innerText="Нетачно";
 }
 
+testCount++;
+
+setTimeout(()=>{
+document.getElementById("feedback").innerText="";
 newTask();
+},700);
+}
+
+function endTest(){
+activeTest=false;
+
+let percent=Math.round((testCorrect/20)*100);
+let message="";
+
+if(percent>=90) message="Одлично! 👑";
+else if(percent>=70) message="Врло добро! 🌟";
+else message="Вежбај још 💪";
+
+document.getElementById("resultBox").style.display="block";
+document.getElementById("resultBox").innerHTML=`
+<h3>Резултат теста</h3>
+<p>${testCorrect} / 20</p>
+<p>${percent}%</p>
+<p>${message}</p>
+<button onclick="startTest()">Понови тест</button>
+`;
+
+saveResult(testCorrect,percent);
+loadHistory();
+}
+
+function saveResult(score,percent){
+let history=JSON.parse(localStorage.getItem("testHistory")||"[]");
+let date=new Date().toLocaleDateString();
+history.unshift({date:date,score:score,percent:percent});
+if(history.length>10) history.pop();
+localStorage.setItem("testHistory",JSON.stringify(history));
+}
+
+function loadHistory(){
+let history=JSON.parse(localStorage.getItem("testHistory")||"[]");
+let html="<h4>Последњи резултати:</h4>";
+history.forEach(h=>{
+html+=`<div>${h.date} – ${h.score}/20 (${h.percent}%)</div>`;
+});
+document.getElementById("history").innerHTML=html;
+}
+
+loadHistory();
 
 if("serviceWorker" in navigator){
 navigator.serviceWorker.register("service-worker.js");
