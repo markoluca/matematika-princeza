@@ -73,7 +73,7 @@ button{
 
 <body>
 
-<header>👑 Princeza Luča 💗</header>
+<header>👑 Princeza Matematika 💗</header>
 
 <div class="container">
 
@@ -97,7 +97,7 @@ button{
 
 let ime="";
 let question=0;
-let limit=15;
+let limit=18;
 let bodovi=0;
 let used=new Set();
 
@@ -124,10 +124,6 @@ function updateInfo(){
  " | Bodovi: "+bodovi+" 💗";
 }
 
-function generateUniqueKey(type,a,b){
- return type+"-"+a+"-"+b;
-}
-
 function nextQuestion(){
 
  if(question>=limit){ finish(); return; }
@@ -138,39 +134,30 @@ function nextQuestion(){
  correctArray=null;
  correctFullExpression=null;
 
- let tip,a,b,key;
-
- do{
-  tip=rand(1,5);
-  a=rand(1,20);
-  b=rand(1,20);
-  key=generateUniqueKey(tip,a,b);
- }while(used.has(key));
- used.add(key);
-
+ let tip=rand(1,8);
  let tekst=(question+1)+". ";
 
  // SABIRANJE
  if(tip===1){
-  a=rand(5,15); b=rand(1,20-a);
+  let a=rand(5,15), b=rand(1,20-a);
   correctAnswer=a+b;
   tekst+="Izračunaj: "+a+" + "+b+" = _";
  }
 
- // TEKSTUALNI SABIRANJE
+ // ODUZIMANJE
  if(tip===2){
-  a=rand(5,15); b=rand(1,20-a);
+  let a=rand(10,20), b=rand(1,a-1);
+  correctAnswer=a-b;
+  tekst+="Izračunaj: "+a+" − "+b+" = _";
+ }
+
+ // TEKSTUALNI
+ if(tip===3){
+  let a=rand(5,15), b=rand(1,20-a);
   correctAnswer=a+b;
   correctFullExpression=a+"+"+b+"="+(a+b);
   tekst+="Princeza ima "+a+" kruna i dobila je "+b+
   ". Napiši kompletno rešenje.";
- }
-
- // ODUZIMANJE
- if(tip===3){
-  a=rand(10,20); b=rand(1,a-1);
-  correctAnswer=a-b;
-  tekst+="Izračunaj: "+a+" − "+b+" = _";
  }
 
  // PARNI IZMEĐU 10 I 18
@@ -179,11 +166,35 @@ function nextQuestion(){
   tekst+="Napiši sve parne brojeve između 10 i 18 (bez 10 i 18).";
  }
 
- // NIZ
+ // NIZ +2
  if(tip===5){
   let start=rand(2,10);
   correctAnswer=start+2;
   tekst+="Nastavi niz: "+start+", "+(start+2)+", "+(start+4)+", _";
+ }
+
+ // NIZ -2
+ if(tip===6){
+  let start=rand(10,20);
+  correctAnswer=start-2;
+  tekst+="Nastavi niz: "+start+", "+(start-2)+", "+(start-4)+", _";
+ }
+
+ // NIZ +3
+ if(tip===7){
+  let start=rand(1,5);
+  correctAnswer=start+3;
+  tekst+="Nastavi niz: "+start+", "+(start+3)+", "+(start+6)+", _";
+ }
+
+ // UPOREĐIVANJE
+ if(tip===8){
+  let a=rand(1,20), b=rand(1,20);
+  if(a>b) correctAnswer=">";
+  if(a<b) correctAnswer="<";
+  if(a===b) correctAnswer="=";
+  tekst+="Uporedi brojeve: "+a+" _ "+b+
+  " (upiši <, > ili =)";
  }
 
  document.getElementById("zadatak").innerHTML=tekst;
@@ -200,8 +211,8 @@ function checkAnswer(){
 
  let tacno=false;
 
- if(correctAnswer!==null && correctFullExpression===null){
-  if(parseInt(input)===correctAnswer) tacno=true;
+ if(correctAnswer!==null && correctFullExpression===null && correctArray===null){
+  if(input==correctAnswer) tacno=true;
  }
 
  if(correctFullExpression!==null){
