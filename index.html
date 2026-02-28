@@ -3,29 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Математичка авантура</title>
-<link rel="manifest" href="manifest.json">
+<title>Принцезина математичка авантура</title>
 
 <style>
 :root{
- --primary:#2563eb;
- --accent:#f59e0b;
- --bg:#f1f5f9;
+ --primary:#d946ef;
+ --secondary:#f472b6;
+ --bg:#fdf2f8;
  --card:#ffffff;
 }
 
 body{
  margin:0;
  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
- background:var(--bg);
+ background:linear-gradient(#fbcfe8,#fdf2f8);
  text-align:center;
+ overflow-x:hidden;
 }
 
 header{
  background:var(--primary);
  color:white;
- padding:15px;
- font-size:20px;
+ padding:18px;
+ font-size:22px;
+}
+
+.avatar{
+ font-size:60px;
+ margin-top:10px;
 }
 
 .container{
@@ -37,8 +42,8 @@ header{
 .card{
  background:var(--card);
  padding:20px;
- border-radius:20px;
- box-shadow:0 8px 20px rgba(0,0,0,0.08);
+ border-radius:25px;
+ box-shadow:0 10px 25px rgba(0,0,0,0.1);
  margin-bottom:20px;
 }
 
@@ -46,102 +51,112 @@ button{
  padding:14px;
  margin:6px;
  font-size:16px;
- border-radius:14px;
+ border-radius:20px;
  border:none;
  background:var(--primary);
  color:white;
- min-width:130px;
+ min-width:140px;
 }
 
 button.secondary{
- background:var(--accent);
+ background:var(--secondary);
 }
 
 input{
  padding:12px;
  font-size:18px;
  width:160px;
- border-radius:12px;
- border:1px solid #ccc;
+ border-radius:15px;
+ border:2px solid #f9a8d4;
  text-align:center;
 }
 
 #zadatak{
- font-size:22px;
+ font-size:20px;
  margin:15px 0;
+}
+
+#poruka{
+ font-size:18px;
+ font-weight:bold;
+ margin-top:10px;
+ min-height:28px;
 }
 
 .status{
  font-size:14px;
  margin-top:10px;
- color:#555;
+ color:#6b21a8;
 }
 
 .hidden{display:none;}
+
+.sparkle{
+ position:absolute;
+ font-size:22px;
+ animation:float 1s ease-out forwards;
+}
+
+@keyframes float{
+ from{transform:translateY(0);opacity:1;}
+ to{transform:translateY(-60px);opacity:0;}
+}
 </style>
 </head>
 
 <body>
 
-<header>Математичка авантура 🚀</header>
+<header>👑 Принцезина математичка авантура ✨</header>
+
+<div class="avatar">👸🏰✨</div>
 
 <div class="container">
 
 <div class="card">
- <input id="ime" placeholder="Унеси име">
- <button onclick="sacuvajIme()">Сачувај</button>
- <div id="pozdrav"></div>
-</div>
-
-<div class="card">
  <button onclick="pokreniIgru('sab')">Сабирање</button>
  <button onclick="pokreniIgru('oduz')">Одузимање</button>
- <button onclick="pokreniIgru('par')">Парни/Непарни</button>
- <button onclick="pokreniIgru('sled')">Претходник/Следбеник</button>
- <button onclick="pokreniTest()" class="secondary">Велики тест (20)</button>
+ <button onclick="pokreniIgru('par')">Парни / Непарни</button>
+ <button onclick="pokreniIgru('sled')">Претходник / Следбеник</button>
+ <button onclick="pokreniTest()" class="secondary">👑 Велики краљевски тест (20)</button>
 </div>
 
 <div class="card">
- <div id="zadatak">Изабери област да почнеш</div>
+ <div id="zadatak">Изабери игру да почнеш</div>
  <input id="odgovor" onkeyup="autoProvera(event)">
+ <div id="poruka"></div>
  <div class="status" id="status"></div>
 </div>
 
 <div class="card hidden" id="rezultatKartica">
- <h3>Резултат</h3>
+ <h3>👑 Резултат 👑</h3>
  <div id="rezultatTekst"></div>
- <button onclick="resetSve()">Почетак</button>
+ <button onclick="resetSve()">Играмо поново</button>
 </div>
 
 </div>
 
 <script>
-if ('serviceWorker' in navigator) {
- navigator.serviceWorker.register('sw.js');
-}
-
 let oblast="";
 let tacno;
 let tacni=0;
 let pogresni=0;
 let ukupno=0;
 let limit=5;
-let vreme=0;
-let timer;
+
+const porukeTacno=[
+ "Браво принцезо! 👑",
+ "Одлично! ✨",
+ "Сјајно! 🌸",
+ "Ти си права краљица математике! 💖"
+];
+
+const porukeNetacno=[
+ "Покушај поново 🌷",
+ "Мало још вежбе 💕",
+ "Биће боље следећи пут 🌈"
+];
 
 function rand(max){return Math.floor(Math.random()*max)+1;}
-
-function sacuvajIme(){
- let ime=document.getElementById("ime").value;
- localStorage.setItem("ime",ime);
- document.getElementById("pozdrav").innerHTML="Здраво, "+ime+"!";
-}
-
-window.onload=function(){
- if(localStorage.getItem("ime")){
-  document.getElementById("pozdrav").innerHTML="Здраво, "+localStorage.getItem("ime")+"!";
- }
-}
 
 function pokreniIgru(o){
  oblast=o;
@@ -175,55 +190,45 @@ function novi(){
   return;
  }
 
- clearInterval(timer);
- vreme=20;
  document.getElementById("odgovor").value="";
- document.getElementById("status").innerHTML="";
+ document.getElementById("poruka").innerHTML="";
 
- let aktivnaOblast = (oblast==="test") ? generisiOblast() : oblast;
+ let aktivna=(oblast==="test")?generisiOblast():oblast;
  let max=20;
+ let tekst=(ukupno+1)+". ";
 
- if(aktivnaOblast==="sab"){
+ if(aktivna==="sab"){
   let a=rand(max);
   let b=rand(max-a);
   tacno=a+b;
-  document.getElementById("zadatak").innerHTML="Израчунај: "+a+" + "+b;
+  tekst+="Израчунај: "+a+" + "+b;
  }
 
- if(aktivnaOblast==="oduz"){
+ if(aktivna==="oduz"){
   let a=rand(max);
   let b=rand(a);
   tacno=a-b;
-  document.getElementById("zadatak").innerHTML="Израчунај: "+a+" - "+b;
+  tekst+="Израчунај: "+a+" - "+b;
  }
 
- if(aktivnaOblast==="par"){
+ if(aktivna==="par"){
   let br=rand(max);
   tacno=(br%2==0)?"паран":"непаран";
-  document.getElementById("zadatak").innerHTML="Да ли је "+br+" паран или непаран?";
+  tekst+="Да ли је "+br+" паран или непаран?";
  }
 
- if(aktivnaOblast==="sled"){
+ if(aktivna==="sled"){
   let br=rand(max-1);
   if(Math.random()<0.5){
    tacno=br-1;
-   document.getElementById("zadatak").innerHTML="Претходник броја "+br+" је?";
+   tekst+="Претходник броја "+br+" је?";
   }else{
    tacno=br+1;
-   document.getElementById("zadatak").innerHTML="Следбеник броја "+br+" је?";
+   tekst+="Следбеник броја "+br+" је?";
   }
  }
 
- timer=setInterval(function(){
-  vreme--;
-  document.getElementById("status").innerHTML="Време: "+vreme+"s";
-  if(vreme<=0){
-   pogresni++;
-   ukupno++;
-   clearInterval(timer);
-   setTimeout(novi,800);
-  }
- },1000);
+ document.getElementById("zadatak").innerHTML=tekst;
 }
 
 function autoProvera(event){
@@ -234,30 +239,48 @@ function autoProvera(event){
 
 function proveri(){
  let unos=document.getElementById("odgovor").value.trim().toLowerCase();
- if(unos==tacno){
-  tacni++;
- }else{
-  pogresni++;
- }
+ let tacan=(unos==tacno);
+
+ if(tacan){tacni++;} else{pogresni++;}
  ukupno++;
- clearInterval(timer);
- setTimeout(novi,600);
+
+ prikaziPoruku(tacan);
+
+ setTimeout(novi,1500);
+}
+
+function prikaziPoruku(tacan){
+ let div=document.getElementById("poruka");
+ if(tacan){
+  div.style.color="#16a34a";
+  div.innerHTML=porukeTacno[Math.floor(Math.random()*porukeTacno.length)];
+  animacija();
+ }else{
+  div.style.color="#dc2626";
+  div.innerHTML=porukeNetacno[Math.floor(Math.random()*porukeNetacno.length)];
+ }
+}
+
+function animacija(){
+ for(let i=0;i<6;i++){
+  let s=document.createElement("div");
+  s.className="sparkle";
+  s.innerHTML="✨";
+  s.style.left=Math.random()*90+"%";
+  s.style.top="50%";
+  document.body.appendChild(s);
+  setTimeout(()=>s.remove(),1000);
+ }
 }
 
 function zavrsi(){
  document.getElementById("rezultatKartica").classList.remove("hidden");
-
  let procenat=Math.round((tacni/limit)*100);
- let ocena="Добар";
-
- if(procenat>=90) ocena="Одличан";
- else if(procenat>=75) ocena="Врло добар";
 
  document.getElementById("rezultatTekst").innerHTML=
- "Тачни: "+tacni+
- "<br>Погрешни: "+pogresni+
- "<br>Успешност: "+procenat+"%"+
- "<br>Оцена: "+ocena;
+ "Тачни одговори: "+tacni+
+ "<br>Погрешни одговори: "+pogresni+
+ "<br>Успешност: "+procenat+"%";
 }
 
 function resetSve(){
