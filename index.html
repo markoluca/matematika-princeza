@@ -3,313 +3,265 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Математичка Принцеза – Комплетан Тест</title>
-
+<title>Математичка авантура</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#ff69b4">
 
 <style>
-body{
-font-family:Arial, sans-serif;
-background:linear-gradient(#ffe6f2,#fff4cc);
-margin:0;
-padding:20px;
-text-align:center;
+:root{
+ --primary:#2563eb;
+ --accent:#f59e0b;
+ --bg:#f1f5f9;
+ --card:#ffffff;
 }
 
-h1{color:#d63384;}
+body{
+ margin:0;
+ font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+ background:var(--bg);
+ text-align:center;
+}
+
+header{
+ background:var(--primary);
+ color:white;
+ padding:15px;
+ font-size:20px;
+}
+
+.container{
+ padding:20px;
+ max-width:500px;
+ margin:auto;
+}
 
 .card{
-max-width:720px;
-margin:auto;
-background:white;
-padding:25px;
-border-radius:25px;
-box-shadow:0 15px 30px rgba(0,0,0,0.15);
+ background:var(--card);
+ padding:20px;
+ border-radius:20px;
+ box-shadow:0 8px 20px rgba(0,0,0,0.08);
+ margin-bottom:20px;
 }
 
 button{
-padding:10px 15px;
-margin:5px;
-border:none;
-border-radius:12px;
-background:#ff69b4;
-color:white;
-font-weight:bold;
-cursor:pointer;
+ padding:14px;
+ margin:6px;
+ font-size:16px;
+ border-radius:14px;
+ border:none;
+ background:var(--primary);
+ color:white;
+ min-width:120px;
 }
 
-.instruction{
-font-size:18px;
-margin-top:15px;
-font-weight:bold;
-color:#444;
-line-height:1.5;
-}
-
-.question{
-font-size:28px;
-margin:15px 0;
-min-height:40px;
+button.secondary{
+ background:var(--accent);
 }
 
 input{
-font-size:24px;
-padding:8px;
-width:200px;
-border-radius:12px;
-border:3px solid #ccc;
-text-align:center;
+ padding:12px;
+ font-size:18px;
+ width:150px;
+ border-radius:12px;
+ border:1px solid #ccc;
+ text-align:center;
 }
 
-.feedback{
-height:24px;
-font-weight:bold;
+#zadatak{
+ font-size:24px;
+ margin:15px 0;
 }
 
-.result-box{
-margin-top:20px;
-padding:15px;
-background:#fff0f6;
-border-radius:15px;
-display:none;
-text-align:left;
+#poruka{
+ font-size:18px;
+ font-weight:600;
+ margin-top:10px;
 }
 
-.mistake{
-background:#ffe0e0;
-padding:8px;
-margin:6px 0;
-border-radius:8px;
+.status{
+ font-size:14px;
+ margin-top:10px;
+ color:#555;
+}
+
+.hidden{
+ display:none;
 }
 </style>
 </head>
 
 <body>
 
-<h1>👑 Математичка Принцеза</h1>
+<header>Математичка авантура 🚀</header>
+
+<div class="container">
 
 <div class="card">
+ <input id="ime" placeholder="Унеси име">
+ <button onclick="sacuvajIme()">Сачувај</button>
+ <div id="pozdrav"></div>
+</div>
 
-<button onclick="startTest()">Покрени тест (20 задатака)</button>
+<div class="card">
+ <button onclick="izaberi('sab')">Сабирање</button>
+ <button onclick="izaberi('oduz')">Одузимање</button>
+ <button onclick="izaberi('par')">Парни/Непарни</button>
+ <button onclick="izaberi('sled')">Претходник/Следбеник</button>
+</div>
 
-<div class="instruction" id="instruction"></div>
-<div class="question" id="question"></div>
+<div class="card">
+ <div id="zadatak">Изабери област да почнеш</div>
+ <input id="odgovor">
+ <br><br>
+ <button class="secondary" onclick="proveri()">Провери</button>
+ <div id="poruka"></div>
+ <div class="status" id="status"></div>
+</div>
 
-<input type="text" id="answer" oninput="checkAnswer()">
-
-<div class="feedback" id="feedback"></div>
-
-<div class="result-box" id="resultBox"></div>
+<div class="card hidden" id="rezultatKartica">
+ <h3>Резултат нивоа</h3>
+ <div id="rezultatTekst"></div>
+ <button onclick="sledeciNivo()">Следећи ниво</button>
+</div>
 
 </div>
 
 <script>
-
-let correct="";
-let instructionText="";
-let explanationText="";
-let questionText="";
-
-let testCount=0;
-let testCorrect=0;
-let mistakes=[];
-const TOTAL_TEST=20;
-
-function rand(min,max){
-return Math.floor(Math.random()*(max-min+1))+min;
+if ('serviceWorker' in navigator) {
+ navigator.serviceWorker.register('sw.js');
 }
 
-function startTest(){
-testCount=0;
-testCorrect=0;
-mistakes=[];
-document.getElementById("resultBox").style.display="none";
-newTask();
+let oblast="";
+let tacno;
+let level=1;
+let maxLevel=10;
+let tacni=0;
+let pogresni=0;
+let ukupno=0;
+let vreme=0;
+let timer;
+
+function rand(max){return Math.floor(Math.random()*max)+1;}
+
+function sacuvajIme(){
+ let ime=document.getElementById("ime").value;
+ localStorage.setItem("ime",ime);
+ document.getElementById("pozdrav").innerHTML="Здраво, "+ime+"!";
 }
 
-function newTask(){
-
-if(testCount>=TOTAL_TEST){
-endTest();
-return;
+window.onload=function(){
+ if(localStorage.getItem("ime")){
+  document.getElementById("pozdrav").innerHTML="Здраво, "+localStorage.getItem("ime")+"!";
+ }
+ updateStatus();
 }
 
-let types=["add","sub","numbers","prevnext","compare","even","odd"];
-let type=types[rand(0,types.length-1)];
-
-let q="";
-
-if(type==="add"){
-let a=rand(0,20),b=rand(0,20);
-if(a+b>20) return newTask();
-correct=(a+b)+"";
-instructionText="Сабери бројеве.";
-explanationText="Израчунај збир и упиши резултат.";
-q=`${a} + ${b} = ?`;
+function izaberi(o){
+ oblast=o;
+ resetujNivo();
+ novi();
 }
 
-if(type==="sub"){
-let a=rand(0,20),b=rand(0,20);
-if(b>a)[a,b]=[b,a];
-correct=(a-b)+"";
-instructionText="Одузми бројеве.";
-explanationText="Израчунај разлику и упиши резултат.";
-q=`${a} - ${b} = ?`;
+function opseg(){
+ return 5 + level*2; 
 }
 
-if(type==="numbers"){
-let s=rand(1,17);
-correct=(s+2)+"";
-instructionText="Попуни низ бројева.";
-explanationText="Погледај редослед бројева и упиши број који недостаје.";
-q=`${s}, ${s+1}, __ , ${s+3}`;
+function novi(){
+ if(ukupno>=5){
+  zavrsiNivo();
+  return;
+ }
+
+ clearInterval(timer);
+ vreme=20;
+ let max=opseg();
+ document.getElementById("poruka").innerHTML="";
+ document.getElementById("odgovor").value="";
+
+ if(oblast==="sab"){
+  let a=rand(max);
+  let b=rand(max-a);
+  tacno=a+b;
+  document.getElementById("zadatak").innerHTML="Израчунај: "+a+" + "+b;
+ }
+
+ if(oblast==="oduz"){
+  let a=rand(max);
+  let b=rand(a);
+  tacno=a-b;
+  document.getElementById("zadatak").innerHTML="Израчунај: "+a+" - "+b;
+ }
+
+ if(oblast==="par"){
+  let br=rand(max);
+  tacno=(br%2==0)?"паран":"непаран";
+  document.getElementById("zadatak").innerHTML="Да ли је "+br+" паран или непаран?";
+ }
+
+ if(oblast==="sled"){
+  let br=rand(max-1);
+  if(Math.random()<0.5){
+   tacno=br-1;
+   document.getElementById("zadatak").innerHTML="Претходник броја "+br+" је?";
+  }else{
+   tacno=br+1;
+   document.getElementById("zadatak").innerHTML="Следбеник броја "+br+" је?";
+  }
+ }
+
+ timer=setInterval(function(){
+  vreme--;
+  updateStatus();
+  if(vreme<=0){
+   pogresni++;
+   ukupno++;
+   clearInterval(timer);
+   setTimeout(novi,1000);
+  }
+ },1000);
+
+ updateStatus();
 }
 
-if(type==="prevnext"){
-let n=rand(2,18);
-correct=(n-1)+"";
-instructionText="Напиши претходник датог броја.";
-explanationText="Претходник је број који долази пре датог броја.";
-q=`__, ${n}, ${n+1}`;
+function proveri(){
+ let unos=document.getElementById("odgovor").value.trim().toLowerCase();
+ if(unos==tacno){
+  tacni++;
+ }else{
+  pogresni++;
+ }
+ ukupno++;
+ updateStatus();
+ setTimeout(novi,1000);
 }
 
-if(type==="compare"){
-let a=rand(0,20),b=rand(0,20);
-correct=(a>b?">":a<b?"<":"=");
-instructionText="Упореди бројеве.";
-explanationText="Упиши > ако је први број већи, < ако је мањи или = ако су једнаки.";
-q=`${a} ? ${b}`;
+function updateStatus(){
+ document.getElementById("status").innerHTML=
+ "Ниво: "+level+
+ " | Тачни: "+tacni+
+ " | Погрешни: "+pogresni+
+ " | Време: "+vreme+"s";
 }
 
-if(type==="even"){
-instructionText="Напиши парне бројеве.";
-explanationText="Парни бројеви су дељиви са 2. Упиши их један за другим.";
-
-let variant=rand(1,2);
-
-if(variant===1){
-correct="1416";
-q="Који су парни бројеви између 12 и 18?";
+function zavrsiNivo(){
+ document.getElementById("rezultatKartica").classList.remove("hidden");
+ document.getElementById("rezultatTekst").innerHTML=
+ "Тачни одговори: "+tacni+
+ "<br>Погрешни одговори: "+pogresni;
 }
 
-if(variant===2){
-correct="2468";
-q="Који су парни бројеви између 1 и 10?";
-}
-}
-
-if(type==="odd"){
-instructionText="Напиши непарне бројеве.";
-explanationText="Непарни бројеви нису дељиви са 2. Упиши их један за другим.";
-
-let variant=rand(1,2);
-
-if(variant===1){
-correct="3579";
-q="Који су непарни бројеви између 1 и 10?";
+function sledeciNivo(){
+ if(level<maxLevel){
+  level++;
+ }
+ resetujNivo();
+ document.getElementById("rezultatKartica").classList.add("hidden");
+ novi();
 }
 
-if(variant===2){
-correct="131517";
-q="Који су непарни бројеви између 11 и 19?";
-}
-}
-
-questionText=q;
-
-document.getElementById("instruction").innerHTML =
-`Задатак ${testCount+1}/20<br>
-<b>${instructionText}</b><br>
-<span style="font-size:15px;color:#666">${explanationText}</span>`;
-
-document.getElementById("question").innerText=q;
-document.getElementById("answer").value="";
-document.getElementById("feedback").innerText="";
-}
-
-function normalize(str){
-let arr=[];
-for(let i=0;i<str.length;i+=2){
-arr.push(str.substring(i,i+2));
-}
-return arr.sort().join("");
-}
-
-function checkAnswer(){
-
-let user=document.getElementById("answer").value.trim();
-if(user==="") return;
-
-let isCorrect=false;
-
-if(correct.length>2){
-isCorrect = normalize(user) === normalize(correct);
-}else{
-isCorrect = user === correct;
-}
-
-if(isCorrect){
-testCorrect++;
-document.getElementById("feedback").innerText="Браво! 🌸";
-}else{
-mistakes.push({
-instruction: instructionText,
-question: questionText,
-user: user,
-correct: correct
-});
-document.getElementById("feedback").innerText="Нетачно";
-}
-
-testCount++;
-
-setTimeout(()=>{
-document.getElementById("feedback").innerText="";
-newTask();
-},900);
-}
-
-function endTest(){
-
-let percent=Math.round((testCorrect/TOTAL_TEST)*100);
-let message="";
-
-if(percent>=90) message="Одлично! 👑";
-else if(percent>=70) message="Врло добро! 🌟";
-else message="Вежбај још 💪";
-
-let html=`
-<h3>Резултат теста</h3>
-<p>${testCorrect} / 20</p>
-<p>${percent}%</p>
-<p><b>${message}</b></p>
-`;
-
-if(mistakes.length>0){
-html+="<h4>Погрешни задаци:</h4>";
-mistakes.forEach(m=>{
-html+=`
-<div class="mistake">
-<b>${m.instruction}</b><br>
-Задатак: ${m.question}<br>
-Твој одговор: ${m.user}<br>
-Тачно решење: ${m.correct}
-</div>
-`;
-});
-}else{
-html+="<p>Сви задаци су тачни! 👑</p>";
-}
-
-html+=`<button onclick="startTest()">Понови тест</button>`;
-
-document.getElementById("resultBox").style.display="block";
-document.getElementById("resultBox").innerHTML=html;
-}
-
-if("serviceWorker" in navigator){
-navigator.serviceWorker.register("service-worker.js");
+function resetujNivo(){
+ tacni=0;
+ pogresni=0;
+ ukupno=0;
 }
 </script>
 
