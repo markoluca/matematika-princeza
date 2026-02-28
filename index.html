@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Princess Math – Školska PRO verzija</title>
+<title>Princess Math – Kompletna Školska Verzija</title>
 
 <style>
 body{
@@ -21,7 +21,7 @@ header{
 }
 
 .container{
- max-width:800px;
+ max-width:900px;
  margin:30px auto;
  padding:20px;
 }
@@ -35,19 +35,19 @@ header{
 }
 
 .equation{
- font-size:32px;
+ font-size:28px;
  font-weight:bold;
  margin:20px 0;
 }
 
 input{
- width:120px;
- padding:12px;
- font-size:22px;
+ padding:10px;
+ font-size:18px;
  font-weight:bold;
  text-align:center;
  border:2px solid #6d28d9;
- border-radius:8px;
+ border-radius:6px;
+ margin:5px;
 }
 
 button{
@@ -61,19 +61,9 @@ button{
  cursor:pointer;
 }
 
-button:hover{
- background:#5b21b6;
-}
-
-#info{
- font-weight:bold;
- margin-bottom:15px;
-}
-
 #poruka{
- margin-top:15px;
- font-size:18px;
  font-weight:bold;
+ margin-top:15px;
 }
 
 .report{
@@ -85,7 +75,7 @@ button:hover{
 
 <body>
 
-<header>🎓 Princess Math – Školska Standardizovana PRO 🎓</header>
+<header>🎓 Princess Math – Kompletna Školska Verzija 🎓</header>
 
 <div class="container">
 
@@ -96,8 +86,8 @@ button:hover{
 
 <div class="card">
  <div id="info"></div>
- <div id="equation" class="equation"></div>
- <input id="odgovor" type="number">
+ <div id="zadatak" class="equation"></div>
+ <div id="odgovorPolje"></div>
  <div id="poruka"></div>
 </div>
 
@@ -109,16 +99,27 @@ button:hover{
 
 let ime="";
 let question=0;
-let limit=12;
+let limit=15;
 let bodovi=0;
-let correctAnswer=0;
-let trenutnaKategorija="";
+let correctAnswer=null;
+let correctArray=null;
+let kategorija="";
 
-let sabTacno=0;
-let oduzTacno=0;
+let statistika={
+ sabiranje:0,
+ oduzimanje:0,
+ tekst:0,
+ parni:0,
+ nizovi:0
+};
 
-let sabUkupno=0;
-let oduzUkupno=0;
+let ukupno={
+ sabiranje:0,
+ oduzimanje:0,
+ tekst:0,
+ parni:0,
+ nizovi:0
+};
 
 function rand(min,max){
  return Math.floor(Math.random()*(max-min+1))+min;
@@ -128,12 +129,6 @@ function startGame(){
  ime=document.getElementById("ime").value || "Učenica";
  question=0;
  bodovi=0;
-
- sabTacno=0;
- oduzTacno=0;
- sabUkupno=0;
- oduzUkupno=0;
-
  document.getElementById("rezultatCard").style.display="none";
  nextQuestion();
 }
@@ -152,51 +147,108 @@ function nextQuestion(){
  }
 
  document.getElementById("poruka").innerHTML="";
- document.getElementById("odgovor").value="";
+ document.getElementById("odgovorPolje").innerHTML="";
+ correctAnswer=null;
+ correctArray=null;
 
- let operator=Math.random()<0.5?"+":"−";
- let a=rand(8,20);
- let b=rand(1,15);
+ let tip=rand(1,6);
+ let tekst=(question+1)+". ";
 
- if(operator==="+"){
-  if(a+b>20) b=20-a;
+ // 1 SABIRANJE
+ if(tip===1){
+  let a=rand(5,15);
+  let b=rand(1,20-a);
   correctAnswer=a+b;
-  trenutnaKategorija="sabiranje";
-  sabUkupno++;
- }else{
-  if(b>=a) b=a-1;
-  correctAnswer=a-b;
-  trenutnaKategorija="oduzimanje";
-  oduzUkupno++;
+  kategorija="sabiranje";
+  ukupno.sabiranje++;
+  tekst+="Izračunaj: "+a+" + "+b+" = _";
+  document.getElementById("odgovorPolje").innerHTML="<input id='odg'>";
  }
 
- document.getElementById("equation").innerHTML=
- "<div>"+(question+1)+". Izračunaj:</div>"+
- "<div>"+a+" "+operator+" "+b+" = _</div>";
+ // 2 ODUZIMANJE
+ if(tip===2){
+  let a=rand(10,20);
+  let b=rand(1,a-1);
+  correctAnswer=a-b;
+  kategorija="oduzimanje";
+  ukupno.oduzimanje++;
+  tekst+="Izračunaj: "+a+" − "+b+" = _";
+  document.getElementById("odgovorPolje").innerHTML="<input id='odg'>";
+ }
 
- document.getElementById("odgovor").onchange=checkAnswer;
+ // 3 TEKSTUALNI
+ if(tip===3){
+  let a=rand(5,15);
+  let b=rand(1,20-a);
+  correctAnswer=a+b;
+  kategorija="tekst";
+  ukupno.tekst++;
+  tekst+="Princeza ima "+a+" kruna i dobila je "+b+
+  ". Koliko sada ima?";
+  document.getElementById("odgovorPolje").innerHTML="<input id='odg'>";
+ }
+
+ // 4 PARAN / NEPARAN
+ if(tip===4){
+  let n=rand(1,20);
+  correctAnswer=(n%2===0)?"paran":"neparan";
+  kategorija="parni";
+  ukupno.parni++;
+  tekst+="Da li je broj "+n+" paran ili neparan?";
+  document.getElementById("odgovorPolje").innerHTML="<input id='odg'>";
+ }
+
+ // 5 NIZ
+ if(tip===5){
+  let start=rand(2,10);
+  correctAnswer=start+2;
+  kategorija="nizovi";
+  ukupno.nizovi++;
+  tekst+="Nastavi niz: "+start+", "+(start+2)+", "+(start+4)+", _";
+  document.getElementById("odgovorPolje").innerHTML="<input id='odg'>";
+ }
+
+ // 6 SVI PARNI OD 4 DO 20
+ if(tip===6){
+  correctArray=[];
+  for(let i=4;i<=20;i+=2) correctArray.push(i);
+  kategorija="parni";
+  ukupno.parni++;
+  tekst+="Napiši sve parne brojeve od 4 do 20.";
+  document.getElementById("odgovorPolje").innerHTML="<input id='odg'>";
+ }
+
+ document.getElementById("zadatak").innerHTML=tekst;
+
+ document.getElementById("odgovorPolje")
+ .addEventListener("change",checkAnswer);
 
  updateInfo();
 }
 
 function checkAnswer(){
+ let input=document.getElementById("odg").value.trim().toLowerCase();
+ let tacno=false;
 
- let value=parseInt(document.getElementById("odgovor").value);
+ if(correctAnswer!==null){
+  if(input==correctAnswer) tacno=true;
+ }
 
- if(value===correctAnswer){
+ if(correctArray!==null){
+  let niz=input.split(",").map(x=>parseInt(x.trim()));
+  tacno=JSON.stringify(niz)===JSON.stringify(correctArray);
+ }
+
+ if(tacno){
   bodovi+=2;
-
-  if(trenutnaKategorija==="sabiranje") sabTacno++;
-  if(trenutnaKategorija==="oduzimanje") oduzTacno++;
-
+  statistika[kategorija]++;
   document.getElementById("poruka").innerHTML="Tačno ✔";
  }else{
-  document.getElementById("poruka").innerHTML=
-  "Netačno ❌ Tačno je "+correctAnswer;
+  document.getElementById("poruka").innerHTML="Netačno ❌";
  }
 
  question++;
- setTimeout(nextQuestion,1000);
+ setTimeout(nextQuestion,1200);
 }
 
 function finish(){
@@ -210,16 +262,6 @@ function finish(){
  else if(procenat>=60) ocena=3;
  else if(procenat>=50) ocena=2;
 
- let sabProc = sabUkupno>0 ?
- Math.round((sabTacno/sabUkupno)*100) : 0;
-
- let oduzProc = oduzUkupno>0 ?
- Math.round((oduzTacno/oduzUkupno)*100) : 0;
-
- let preporuka="Nastaviti redovno vežbanje.";
- if(sabProc<70) preporuka="Potrebno dodatno vežbanje sabiranja.";
- if(oduzProc<70) preporuka="Potrebno dodatno vežbanje oduzimanja.";
-
  document.getElementById("rezultatCard").style.display="block";
  document.getElementById("rezultatCard").innerHTML=
  "<div class='report'>"+
@@ -228,9 +270,11 @@ function finish(){
  "Bodovi: "+bodovi+" / "+maxBodova+"<br>"+
  "Uspešnost: "+procenat+"%<br>"+
  "Ocena: <b>"+ocena+"</b><br><br>"+
- "Sabiranje: "+sabProc+"%<br>"+
- "Oduzimanje: "+oduzProc+"%<br><br>"+
- "Preporuka: "+preporuka+
+ "Sabiranje: "+statistika.sabiranje+" tačnih<br>"+
+ "Oduzimanje: "+statistika.oduzimanje+" tačnih<br>"+
+ "Tekstualni: "+statistika.tekst+" tačnih<br>"+
+ "Parni/Neparni: "+statistika.parni+" tačnih<br>"+
+ "Nizovi: "+statistika.nizovi+" tačnih"+
  "</div>";
 }
 
