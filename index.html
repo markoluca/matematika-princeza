@@ -30,7 +30,7 @@ header{
 
 .container{
  padding:20px;
- max-width:500px;
+ max-width:520px;
  margin:auto;
 }
 
@@ -50,7 +50,7 @@ button{
  border:none;
  background:var(--primary);
  color:white;
- min-width:120px;
+ min-width:130px;
 }
 
 button.secondary{
@@ -60,21 +60,15 @@ button.secondary{
 input{
  padding:12px;
  font-size:18px;
- width:150px;
+ width:160px;
  border-radius:12px;
  border:1px solid #ccc;
  text-align:center;
 }
 
 #zadatak{
- font-size:24px;
+ font-size:22px;
  margin:15px 0;
-}
-
-#poruka{
- font-size:18px;
- font-weight:600;
- margin-top:10px;
 }
 
 .status{
@@ -83,9 +77,7 @@ input{
  color:#555;
 }
 
-.hidden{
- display:none;
-}
+.hidden{display:none;}
 </style>
 </head>
 
@@ -102,25 +94,23 @@ input{
 </div>
 
 <div class="card">
- <button onclick="izaberi('sab')">Сабирање</button>
- <button onclick="izaberi('oduz')">Одузимање</button>
- <button onclick="izaberi('par')">Парни/Непарни</button>
- <button onclick="izaberi('sled')">Претходник/Следбеник</button>
+ <button onclick="pokreniIgru('sab')">Сабирање</button>
+ <button onclick="pokreniIgru('oduz')">Одузимање</button>
+ <button onclick="pokreniIgru('par')">Парни/Непарни</button>
+ <button onclick="pokreniIgru('sled')">Претходник/Следбеник</button>
+ <button onclick="pokreniTest()" class="secondary">Велики тест (20)</button>
 </div>
 
 <div class="card">
  <div id="zadatak">Изабери област да почнеш</div>
- <input id="odgovor">
- <br><br>
- <button class="secondary" onclick="proveri()">Провери</button>
- <div id="poruka"></div>
+ <input id="odgovor" onkeyup="autoProvera(event)">
  <div class="status" id="status"></div>
 </div>
 
 <div class="card hidden" id="rezultatKartica">
- <h3>Резултат нивоа</h3>
+ <h3>Резултат</h3>
  <div id="rezultatTekst"></div>
- <button onclick="sledeciNivo()">Следећи ниво</button>
+ <button onclick="resetSve()">Почетак</button>
 </div>
 
 </div>
@@ -132,11 +122,10 @@ if ('serviceWorker' in navigator) {
 
 let oblast="";
 let tacno;
-let level=1;
-let maxLevel=10;
 let tacni=0;
 let pogresni=0;
 let ukupno=0;
+let limit=5;
 let vreme=0;
 let timer;
 
@@ -152,52 +141,69 @@ window.onload=function(){
  if(localStorage.getItem("ime")){
   document.getElementById("pozdrav").innerHTML="Здраво, "+localStorage.getItem("ime")+"!";
  }
- updateStatus();
 }
 
-function izaberi(o){
+function pokreniIgru(o){
  oblast=o;
- resetujNivo();
+ limit=5;
+ resetStat();
  novi();
 }
 
-function opseg(){
- return 5 + level*2; 
+function pokreniTest(){
+ oblast="test";
+ limit=20;
+ resetStat();
+ novi();
+}
+
+function resetStat(){
+ tacni=0;
+ pogresni=0;
+ ukupno=0;
+ document.getElementById("rezultatKartica").classList.add("hidden");
+}
+
+function generisiOblast(){
+ let oblasti=["sab","oduz","par","sled"];
+ return oblasti[Math.floor(Math.random()*4)];
 }
 
 function novi(){
- if(ukupno>=5){
-  zavrsiNivo();
+ if(ukupno>=limit){
+  zavrsi();
   return;
  }
 
  clearInterval(timer);
  vreme=20;
- let max=opseg();
- document.getElementById("poruka").innerHTML="";
  document.getElementById("odgovor").value="";
+ document.getElementById("status").innerHTML="";
 
- if(oblast==="sab"){
+ let aktivnaOblast = (oblast==="test") ? generisiOblast() : oblast;
+ let max=20;
+
+ if(aktivnaOblast==="sab"){
   let a=rand(max);
   let b=rand(max-a);
   tacno=a+b;
   document.getElementById("zadatak").innerHTML="Израчунај: "+a+" + "+b;
  }
 
- if(oblast==="oduz"){
+ if(aktivnaOblast==="oduz"){
   let a=rand(max);
   let b=rand(a);
   tacno=a-b;
   document.getElementById("zadatak").innerHTML="Израчунај: "+a+" - "+b;
  }
 
- if(oblast==="par"){
+ if(aktivnaOblast==="par"){
   let br=rand(max);
   tacno=(br%2==0)?"паран":"непаран";
   document.getElementById("zadatak").innerHTML="Да ли је "+br+" паран или непаран?";
  }
 
- if(oblast==="sled"){
+ if(aktivnaOblast==="sled"){
   let br=rand(max-1);
   if(Math.random()<0.5){
    tacno=br-1;
@@ -210,16 +216,20 @@ function novi(){
 
  timer=setInterval(function(){
   vreme--;
-  updateStatus();
+  document.getElementById("status").innerHTML="Време: "+vreme+"s";
   if(vreme<=0){
    pogresni++;
    ukupno++;
    clearInterval(timer);
-   setTimeout(novi,1000);
+   setTimeout(novi,800);
   }
  },1000);
+}
 
- updateStatus();
+function autoProvera(event){
+ if(event.key==="Enter"){
+  proveri();
+ }
 }
 
 function proveri(){
@@ -230,38 +240,28 @@ function proveri(){
   pogresni++;
  }
  ukupno++;
- updateStatus();
- setTimeout(novi,1000);
+ clearInterval(timer);
+ setTimeout(novi,600);
 }
 
-function updateStatus(){
- document.getElementById("status").innerHTML=
- "Ниво: "+level+
- " | Тачни: "+tacni+
- " | Погрешни: "+pogresni+
- " | Време: "+vreme+"s";
-}
-
-function zavrsiNivo(){
+function zavrsi(){
  document.getElementById("rezultatKartica").classList.remove("hidden");
+
+ let procenat=Math.round((tacni/limit)*100);
+ let ocena="Добар";
+
+ if(procenat>=90) ocena="Одличан";
+ else if(procenat>=75) ocena="Врло добар";
+
  document.getElementById("rezultatTekst").innerHTML=
- "Тачни одговори: "+tacni+
- "<br>Погрешни одговори: "+pogresni;
+ "Тачни: "+tacni+
+ "<br>Погрешни: "+pogresni+
+ "<br>Успешност: "+procenat+"%"+
+ "<br>Оцена: "+ocena;
 }
 
-function sledeciNivo(){
- if(level<maxLevel){
-  level++;
- }
- resetujNivo();
- document.getElementById("rezultatKartica").classList.add("hidden");
- novi();
-}
-
-function resetujNivo(){
- tacni=0;
- pogresni=0;
- ukupno=0;
+function resetSve(){
+ location.reload();
 }
 </script>
 
