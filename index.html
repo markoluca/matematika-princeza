@@ -3,262 +3,237 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>👑 Princess Math Premium PEDAGOŠKA AI</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>Princess Math – Školska PRO verzija</title>
 
 <style>
 body{
  margin:0;
- font-family:-apple-system,BlinkMacSystemFont,sans-serif;
- background:linear-gradient(#fbcfe8,#fdf2f8);
+ font-family:Arial, sans-serif;
+ background:#f4f6f9;
  text-align:center;
 }
 
 header{
- background:#7e22ce;
+ background:#6d28d9;
  color:white;
  padding:20px;
  font-size:22px;
 }
 
-.container{padding:20px;max-width:900px;margin:auto;}
+.container{
+ max-width:800px;
+ margin:30px auto;
+ padding:20px;
+}
 
 .card{
  background:white;
  padding:25px;
- border-radius:25px;
- box-shadow:0 10px 25px rgba(0,0,0,0.1);
+ border-radius:12px;
+ box-shadow:0 8px 20px rgba(0,0,0,0.1);
  margin-bottom:20px;
 }
 
-input{
- padding:12px;
- font-size:20px;
+.equation{
+ font-size:32px;
  font-weight:bold;
- width:70px;
- border-radius:12px;
- border:2px solid #f472b6;
+ margin:20px 0;
+}
+
+input{
+ width:120px;
+ padding:12px;
+ font-size:22px;
+ font-weight:bold;
  text-align:center;
- margin:5px;
+ border:2px solid #6d28d9;
+ border-radius:8px;
 }
 
 button{
- padding:14px;
+ padding:12px 18px;
  font-size:16px;
- border-radius:20px;
  border:none;
- background:#d946ef;
+ border-radius:8px;
+ background:#6d28d9;
  color:white;
- margin:5px;
+ margin-top:10px;
+ cursor:pointer;
 }
 
-.bold{font-weight:bold;}
+button:hover{
+ background:#5b21b6;
+}
+
+#info{
+ font-weight:bold;
+ margin-bottom:15px;
+}
+
+#poruka{
+ margin-top:15px;
+ font-size:18px;
+ font-weight:bold;
+}
+
+.report{
+ text-align:left;
+ line-height:1.6;
+}
 </style>
 </head>
 
 <body>
 
-<header>👑 Princess Math Premium – Pedagoška AI 👑</header>
+<header>🎓 Princess Math – Školska Standardizovana PRO 🎓</header>
 
 <div class="container">
 
 <div class="card">
- <input id="ime" placeholder="Име принцезе">
- <button onclick="startGame()">Започни игру</button>
+ <input id="ime" placeholder="Ime učenice">
+ <button onclick="startGame()">Započni test</button>
 </div>
 
 <div class="card">
- <div id="info" class="bold"></div>
- <div id="zadatak" class="bold"></div>
- <div id="odgovorPolje"></div>
- <div id="poruka" class="bold"></div>
+ <div id="info"></div>
+ <div id="equation" class="equation"></div>
+ <input id="odgovor" type="number">
+ <div id="poruka"></div>
 </div>
 
 <div class="card" id="rezultatCard" style="display:none;"></div>
 
-<div class="card">
- <h3>📊 Графикон напредка</h3>
- <canvas id="progressChart"></canvas>
-</div>
-
-<div class="card">
- <h3>🎓 Педагошки извештај</h3>
- <div id="report"></div>
-</div>
-
 </div>
 
 <script>
+
 let ime="";
 let question=0;
-let limit=10;
-let krune=0;
-let mistakes=0;
-let sabErrors=0;
-let oduzErrors=0;
-let difficulty=3;
-let streak=0;
-let tacni=[];
+let limit=12;
+let bodovi=0;
+let correctAnswer=0;
+let trenutnaKategorija="";
 
-let history=JSON.parse(localStorage.getItem("princessHistory"))||[];
+let sabTacno=0;
+let oduzTacno=0;
+
+let sabUkupno=0;
+let oduzUkupno=0;
 
 function rand(min,max){
  return Math.floor(Math.random()*(max-min+1))+min;
 }
 
-function today(){
- return new Date().toISOString().split("T")[0];
-}
-
 function startGame(){
- ime=document.getElementById("ime").value||"Принцеза";
+ ime=document.getElementById("ime").value || "Učenica";
  question=0;
- krune=0;
- mistakes=0;
- sabErrors=0;
- oduzErrors=0;
- difficulty=3;
- streak=0;
+ bodovi=0;
+
+ sabTacno=0;
+ oduzTacno=0;
+ sabUkupno=0;
+ oduzUkupno=0;
+
  document.getElementById("rezultatCard").style.display="none";
  nextQuestion();
 }
 
 function updateInfo(){
  document.getElementById("info").innerHTML=
- "Питање: "+(question+1)+"/"+limit+
- " | Круне: "+krune+
- " | Тежина: "+difficulty;
+ "Pitanje: "+(question+1)+" / "+limit+
+ " | Bodovi: "+bodovi;
 }
 
 function nextQuestion(){
+
  if(question>=limit){
   finish();
   return;
  }
 
  document.getElementById("poruka").innerHTML="";
- document.getElementById("odgovorPolje").innerHTML="";
- tacni=[];
+ document.getElementById("odgovor").value="";
 
- let type=Math.random()<0.5?0:1;
- let a=rand(5*difficulty,20);
- let b=rand(1,10);
+ let operator=Math.random()<0.5?"+":"−";
+ let a=rand(8,20);
+ let b=rand(1,15);
 
- if(type===0){
+ if(operator==="+"){
   if(a+b>20) b=20-a;
-  tacni=[a,"+",b,a+b];
-  document.getElementById("zadatak").innerHTML=
-  (question+1)+". Принцеза има <b>"+a+
-  "</b> круна и добила је <b>"+b+
-  "</b>. Попуни:";
+  correctAnswer=a+b;
+  trenutnaKategorija="sabiranje";
+  sabUkupno++;
  }else{
   if(b>=a) b=a-1;
-  tacni=[a,"-",b,a-b];
-  document.getElementById("zadatak").innerHTML=
-  (question+1)+". Принцеза је имала <b>"+a+
-  "</b> цветова и поклонила <b>"+b+
-  "</b>. Попуни:";
+  correctAnswer=a-b;
+  trenutnaKategorija="oduzimanje";
+  oduzUkupno++;
  }
 
- document.getElementById("odgovorPolje").innerHTML=
- `<input id="b0"> <input id="b1"> <input id="b2"> = <input id="b3">`;
+ document.getElementById("equation").innerHTML=
+ "<div>"+(question+1)+". Izračunaj:</div>"+
+ "<div>"+a+" "+operator+" "+b+" = _</div>";
 
- setTimeout(()=>{
-  document.querySelectorAll("#odgovorPolje input")
-  .forEach(el=>el.addEventListener("change",proveri));
- },100);
+ document.getElementById("odgovor").onchange=checkAnswer;
 
  updateInfo();
 }
 
-function proveri(){
- let inputs=document.querySelectorAll("#odgovorPolje input");
- let unosi=[];
- for(let i=0;i<inputs.length;i++){
-  if(inputs[i].value==="") return;
-  unosi.push(inputs[i].value);
- }
+function checkAnswer(){
 
- let tacno=true;
- for(let i=0;i<tacni.length;i++){
-  if(unosi[i]!=tacni[i]) tacno=false;
- }
+ let value=parseInt(document.getElementById("odgovor").value);
 
- if(tacno){
-  krune+=2;
-  streak++;
-  if(streak>=3) difficulty++;
-  document.getElementById("poruka").innerHTML="Браво 👑";
-  question++;
-  setTimeout(nextQuestion,1000);
+ if(value===correctAnswer){
+  bodovi+=2;
+
+  if(trenutnaKategorija==="sabiranje") sabTacno++;
+  if(trenutnaKategorija==="oduzimanje") oduzTacno++;
+
+  document.getElementById("poruka").innerHTML="Tačno ✔";
  }else{
-  mistakes++;
-  streak=0;
-  if(difficulty>1) difficulty--;
-  if(tacni[1]==="+") sabErrors++;
-  if(tacni[1]==="-") oduzErrors++;
-  document.getElementById("poruka").innerHTML="Покушај поново ❌";
+  document.getElementById("poruka").innerHTML=
+  "Netačno ❌ Tačno je "+correctAnswer;
  }
- updateInfo();
+
+ question++;
+ setTimeout(nextQuestion,1000);
 }
 
 function finish(){
- let rezultat={
-  ime:ime,
-  datum:today(),
-  krune:krune,
-  greske:mistakes,
-  sabErrors:sabErrors,
-  oduzErrors:oduzErrors
- };
 
- history.push(rezultat);
- localStorage.setItem("princessHistory",JSON.stringify(history));
+ let maxBodova=limit*2;
+ let procenat=Math.round((bodovi/maxBodova)*100);
+
+ let ocena=1;
+ if(procenat>=90) ocena=5;
+ else if(procenat>=75) ocena=4;
+ else if(procenat>=60) ocena=3;
+ else if(procenat>=50) ocena=2;
+
+ let sabProc = sabUkupno>0 ?
+ Math.round((sabTacno/sabUkupno)*100) : 0;
+
+ let oduzProc = oduzUkupno>0 ?
+ Math.round((oduzTacno/oduzUkupno)*100) : 0;
+
+ let preporuka="Nastaviti redovno vežbanje.";
+ if(sabProc<70) preporuka="Potrebno dodatno vežbanje sabiranja.";
+ if(oduzProc<70) preporuka="Potrebno dodatno vežbanje oduzimanja.";
 
  document.getElementById("rezultatCard").style.display="block";
  document.getElementById("rezultatCard").innerHTML=
- "<h3>👑 Резултат 👑</h3>"+
- "Круне: "+krune+
- "<br>Грешке: "+mistakes;
-
- drawChart();
- generateReport();
+ "<div class='report'>"+
+ "<h3>ŠKOLSKI IZVEŠTAJ</h3>"+
+ "Učenica: <b>"+ime+"</b><br><br>"+
+ "Bodovi: "+bodovi+" / "+maxBodova+"<br>"+
+ "Uspešnost: "+procenat+"%<br>"+
+ "Ocena: <b>"+ocena+"</b><br><br>"+
+ "Sabiranje: "+sabProc+"%<br>"+
+ "Oduzimanje: "+oduzProc+"%<br><br>"+
+ "Preporuka: "+preporuka+
+ "</div>";
 }
 
-function drawChart(){
- let ctx=document.getElementById("progressChart");
- let labels=history.map((h,i)=>"Игра "+(i+1));
- let data=history.map(h=>h.krune);
-
- new Chart(ctx,{
-  type:"line",
-  data:{
-   labels:labels,
-   datasets:[{
-    label:"Круне",
-    data:data,
-    borderColor:"#d946ef",
-    fill:false
-   }]
-  }
- });
-}
-
-function generateReport(){
- let ukupno=history.length;
- let prosek=Math.round(history.reduce((a,b)=>a+b.krune,0)/ukupno);
- let ukupnoGresaka=history.reduce((a,b)=>a+b.greske,0);
-
- let slabost="Стабилан развој.";
- if(ukupnoGresaka/ukupno>3) slabost="Потребна додатна подршка.";
- if(prosek>15) slabost="Изузетан напредак!";
-
- document.getElementById("report").innerHTML=
- "Број одиграних игара: "+ukupno+
- "<br>Просечне круне: "+prosek+
- "<br>Укупне грешке: "+ukupnoGresaka+
- "<br><br>📌 Процена: "+slabost;
-}
 </script>
 
 </body>
