@@ -49,7 +49,7 @@ input{
  border:2px solid #e11d48;
  border-radius:8px;
  margin:5px;
- width:260px;
+ width:280px;
 }
 
 button{
@@ -123,10 +123,9 @@ button{
 
 let име="";
 let question=0;
-let limit=20;
+let limit=22;
 let бодови=0;
 let locked=false;
-let used=new Set();
 
 let correctAnswer=null;
 let correctArray=null;
@@ -140,7 +139,6 @@ function startGame(){
  име=document.getElementById("ime").value||"Принцеза";
  question=0;
  бодови=0;
- used.clear();
  locked=false;
  document.getElementById("rezultatCard").style.display="none";
  nextQuestion();
@@ -157,33 +155,29 @@ function nextQuestion(){
  if(question>=limit){ finish(); return; }
 
  locked=false;
-
  document.getElementById("poruka").innerHTML="";
  document.getElementById("odgovorPolje").innerHTML="";
  correctAnswer=null;
  correctArray=null;
  correctFullExpression=null;
 
- let tip=rand(1,8);
+ let tip=rand(1,11);
  let текст=(question+1)+". ";
 
  if(tip===1){
-  let a=rand(12,19);
-  let b=rand(1,20-a);
+  let a=rand(12,19), b=rand(1,20-a);
   correctAnswer=a+b;
   текст+="Израчунај: "+a+" + "+b+" = _";
  }
 
  if(tip===2){
-  let a=rand(15,20);
-  let b=rand(5,a-1);
+  let a=rand(15,20), b=rand(5,a-1);
   correctAnswer=a-b;
   текст+="Израчунај: "+a+" − "+b+" = _";
  }
 
  if(tip===3){
-  let a=rand(10,18);
-  let b=rand(1,20-a);
+  let a=rand(10,18), b=rand(1,20-a);
   correctAnswer=a+b;
   correctFullExpression=a+"+"+b+"="+(a+b);
   текст+="Принцеза има "+a+" круна и добила је "+b+
@@ -196,26 +190,40 @@ function nextQuestion(){
  }
 
  if(tip===5){
+  correctAnswer=10;
+  текст+="Који је највећи парни број прве десетице?";
+ }
+
+ if(tip===6){
+  correctAnswer=19;
+  текст+="Који је највећи непарни број друге десетице?";
+ }
+
+ if(tip===7){
+  correctArray=[8,10,12,14,16,18];
+  текст+="Напиши све парне бројеве веће од 6 а мање од 20.";
+ }
+
+ if(tip===8){
   let start=rand(8,14);
   correctAnswer=start+6;
   текст+="Настави низ: "+start+", "+(start+2)+", "+(start+4)+", _";
  }
 
- if(tip===6){
+ if(tip===9){
   let start=rand(16,20);
   correctAnswer=start-6;
   текст+="Настави низ: "+start+", "+(start-2)+", "+(start-4)+", _";
  }
 
- if(tip===7){
+ if(tip===10){
   let start=rand(6,10);
   correctAnswer=start+9;
   текст+="Настави низ: "+start+", "+(start+3)+", "+(start+6)+", _";
  }
 
- if(tip===8){
-  let a=rand(12,20);
-  let b=rand(12,20);
+ if(tip===11){
+  let a=rand(12,20), b=rand(12,20);
   if(a>b) correctAnswer=">";
   if(a<b) correctAnswer="<";
   if(a===b) correctAnswer="=";
@@ -226,9 +234,7 @@ function nextQuestion(){
  document.getElementById("zadatak").innerHTML=текст;
  document.getElementById("odgovorPolje").innerHTML="<input id='odg' autofocus>";
 
- let inputPolje=document.getElementById("odg");
-
- inputPolje.addEventListener("keydown",function(e){
+ document.getElementById("odg").addEventListener("keydown",function(e){
    if(e.key==="Enter" && !locked){
        checkAnswer();
    }
@@ -243,10 +249,9 @@ function checkAnswer(){
  locked=true;
 
  let input=document.getElementById("odg").value.replace(/\s/g,"");
-
  let tacno=false;
 
- if(correctAnswer!==null && correctFullExpression===null && correctArray===null){
+ if(correctAnswer!==null && correctArray===null && correctFullExpression===null){
   if(input==correctAnswer) tacno=true;
  }
 
