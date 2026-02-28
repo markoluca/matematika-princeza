@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>👑 Luča osvaja 💗</title>
+<title>👑 Принцеза Математика 💗</title>
 
 <style>
 body{
@@ -70,7 +70,7 @@ button{
  font-size:18px;
 }
 
-/* 💖 Hearts */
+/* 💖 Срца */
 .heart{
  position:fixed;
  font-size:28px;
@@ -82,7 +82,7 @@ button{
  100%{transform:translateY(-150px);opacity:0;}
 }
 
-/* 🎉 Confetti */
+/* 🎉 Конфете */
 .confetti{
  position:fixed;
  width:10px;
@@ -99,13 +99,13 @@ button{
 
 <body>
 
-<header>👑 Luča osvaja 💗</header>
+<header>👑 Принцеза Математика 💗</header>
 
 <div class="container">
 
 <div class="card">
- <input id="ime" placeholder="Ime princeze">
- <button onclick="startGame()">Započni kviz</button>
+ <input id="ime" placeholder="Име принцезе">
+ <button onclick="startGame()">Започни квиз</button>
 </div>
 
 <div class="card">
@@ -121,10 +121,10 @@ button{
 
 <script>
 
-let ime="";
+let име="";
 let question=0;
-let limit=18;
-let bodovi=0;
+let limit=20; // повећан број питања
+let бодови=0;
 let used=new Set();
 
 let correctAnswer=null;
@@ -136,9 +136,9 @@ function rand(min,max){
 }
 
 function startGame(){
- ime=document.getElementById("ime").value||"Princeza";
+ име=document.getElementById("ime").value||"Принцеза";
  question=0;
- bodovi=0;
+ бодови=0;
  used.clear();
  document.getElementById("rezultatCard").style.display="none";
  nextQuestion();
@@ -146,8 +146,8 @@ function startGame(){
 
 function updateInfo(){
  document.getElementById("info").innerHTML=
- "Pitanje: "+(question+1)+" / "+limit+
- " | Bodovi: "+bodovi+" 💗";
+ "Питање: "+(question+1)+" / "+limit+
+ " | Бодови: "+бодови+" 💗";
 }
 
 function nextQuestion(){
@@ -161,61 +161,73 @@ function nextQuestion(){
  correctFullExpression=null;
 
  let tip=rand(1,8);
- let tekst=(question+1)+". ";
+ let текст=(question+1)+". ";
 
+ // ТЕЖЕ САБИРАЊЕ
  if(tip===1){
-  let a=rand(5,15), b=rand(1,20-a);
+  let a=rand(11,19);
+  let b=rand(1,20-a);
   correctAnswer=a+b;
-  tekst+="Izračunaj: "+a+" + "+b+" = _";
+  текст+="Израчунај: "+a+" + "+b+" = _";
  }
 
+ // ТЕЖЕ ОДУЗИМАЊЕ
  if(tip===2){
-  let a=rand(10,20), b=rand(1,a-1);
+  let a=rand(15,20);
+  let b=rand(5,a-1);
   correctAnswer=a-b;
-  tekst+="Izračunaj: "+a+" − "+b+" = _";
+  текст+="Израчунај: "+a+" − "+b+" = _";
  }
 
+ // ТЕКСТУАЛНИ (КОМПЛЕТНО РЕШЕЊЕ)
  if(tip===3){
-  let a=rand(5,15), b=rand(1,20-a);
+  let a=rand(10,18);
+  let b=rand(1,20-a);
   correctAnswer=a+b;
   correctFullExpression=a+"+"+b+"="+(a+b);
-  tekst+="Princeza ima "+a+" kruna i dobila je "+b+
-  ". Napiši kompletno rešenje.";
+  текст+="Принцеза има "+a+" круна и добила је "+b+
+  ". Напиши комплетно решење.";
  }
 
+ // ПАРНИ (ПРЕЦИЗНО)
  if(tip===4){
   correctArray=[12,14,16];
-  tekst+="Napiši sve parne brojeve između 10 i 18 (bez 10 i 18).";
+  текст+="Напиши све парне бројеве између 10 и 18 (без 10 и 18).";
  }
 
+ // НИЗ +2
  if(tip===5){
-  let start=rand(2,10);
+  let start=rand(8,14);
   correctAnswer=start+6;
-  tekst+="Nastavi niz: "+start+", "+(start+2)+", "+(start+4)+", _";
+  текст+="Настави низ: "+start+", "+(start+2)+", "+(start+4)+", _";
  }
 
+ // НИЗ -2
  if(tip===6){
-  let start=rand(10,20);
+  let start=rand(16,20);
   correctAnswer=start-6;
-  tekst+="Nastavi niz: "+start+", "+(start-2)+", "+(start-4)+", _";
+  текст+="Настави низ: "+start+", "+(start-2)+", "+(start-4)+", _";
  }
 
+ // НИЗ +3
  if(tip===7){
-  let start=rand(1,5);
+  let start=rand(5,10);
   correctAnswer=start+9;
-  tekst+="Nastavi niz: "+start+", "+(start+3)+", "+(start+6)+", _";
+  текст+="Настави низ: "+start+", "+(start+3)+", "+(start+6)+", _";
  }
 
+ // ПОРЕЂЕЊЕ БРОЈЕВА
  if(tip===8){
-  let a=rand(1,20), b=rand(1,20);
+  let a=rand(10,20);
+  let b=rand(10,20);
   if(a>b) correctAnswer=">";
   if(a<b) correctAnswer="<";
   if(a===b) correctAnswer="=";
-  tekst+="Uporedi brojeve: "+a+" _ "+b+
-  " (upiši <, > ili =)";
+  текст+="Упореди бројеве: "+a+" _ "+b+
+  " (упиши <, > или =)";
  }
 
- document.getElementById("zadatak").innerHTML=tekst;
+ document.getElementById("zadatak").innerHTML=текст;
  document.getElementById("odgovorPolje").innerHTML="<input id='odg' autofocus>";
 
  let inputPolje=document.getElementById("odg");
@@ -235,8 +247,7 @@ function nextQuestion(){
 
 function checkAnswer(){
 
- let input=document.getElementById("odg").value
- .replace(/\s/g,"");
+ let input=document.getElementById("odg").value.replace(/\s/g,"");
 
  let tacno=false;
 
@@ -254,11 +265,11 @@ function checkAnswer(){
  }
 
  if(tacno){
-  bodovi+=2;
-  document.getElementById("poruka").innerHTML="Bravo princezo! 💖";
+  бодови+=2;
+  document.getElementById("poruka").innerHTML="Браво принцезо! 💖";
   heartAnimation();
  }else{
-  document.getElementById("poruka").innerHTML="Netačno ❌";
+  document.getElementById("poruka").innerHTML="Нетачно ❌";
  }
 
  question++;
@@ -267,7 +278,7 @@ function checkAnswer(){
 
 function finish(){
  let max=limit*2;
- let proc=Math.round((bodovi/max)*100);
+ let proc=Math.round((бодови/max)*100);
 
  let ocena=1;
  if(proc>=90) ocena=5;
@@ -277,11 +288,11 @@ function finish(){
 
  document.getElementById("rezultatCard").style.display="block";
  document.getElementById("rezultatCard").innerHTML=
- "<h3>Rezultat 💗</h3>"+
- "Princeza: <b>"+ime+"</b><br>"+
- "Bodovi: "+bodovi+" / "+max+"<br>"+
- "Uspešnost: "+proc+"%<br>"+
- "<b>Ocena: "+ocena+"</b>";
+ "<h3>Резултат 💗</h3>"+
+ "Принцеза: <b>"+име+"</b><br>"+
+ "Бодови: "+бодови+" / "+max+"<br>"+
+ "Успешност: "+proc+"%<br>"+
+ "<b>Оцена: "+ocena+"</b>";
 
  if(proc===100) confettiEffect();
 }
