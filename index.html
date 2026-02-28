@@ -126,6 +126,7 @@ let question=0;
 let limit=22;
 let бодови=0;
 let locked=false;
+let usedSequences=new Set();
 
 let correctAnswer=null;
 let correctArray=null;
@@ -140,6 +141,7 @@ function startGame(){
  question=0;
  бодови=0;
  locked=false;
+ usedSequences.clear();
  document.getElementById("rezultatCard").style.display="none";
  nextQuestion();
 }
@@ -161,7 +163,7 @@ function nextQuestion(){
  correctArray=null;
  correctFullExpression=null;
 
- let tip=rand(1,11);
+ let tip=rand(1,9);
  let текст=(question+1)+". ";
 
  if(tip===1){
@@ -173,7 +175,7 @@ function nextQuestion(){
  if(tip===2){
   let a=rand(15,20), b=rand(5,a-1);
   correctAnswer=a-b;
-  текст+="Израчунај: "+a+" − "+b+" = _";
+  tekst+="Израчунај: "+a+" − "+b+" = _";
  }
 
  if(tip===3){
@@ -185,44 +187,55 @@ function nextQuestion(){
  }
 
  if(tip===4){
-  correctArray=[12,14,16];
-  текст+="Напиши све парне бројеве између 10 и 18 (без 10 и 18).";
- }
-
- if(tip===5){
   correctAnswer=10;
   текст+="Који је највећи парни број прве десетице?";
  }
 
- if(tip===6){
+ if(tip===5){
   correctAnswer=19;
   текст+="Који је највећи непарни број друге десетице?";
  }
 
- if(tip===7){
+ if(tip===6){
   correctArray=[8,10,12,14,16,18];
   текст+="Напиши све парне бројеве веће од 6 а мање од 20.";
  }
 
+ if(tip===7){
+  correctArray=[12,14,16];
+  текст+="Напиши све парне бројеве између 10 и 18 (без 10 и 18).";
+ }
+
  if(tip===8){
-  let start=rand(8,14);
-  correctAnswer=start+6;
-  текст+="Настави низ: "+start+", "+(start+2)+", "+(start+4)+", _";
+
+  let nizovi=[
+   {p:"Настави низ: 2, 4, 6, _", r:8},
+   {p:"Настави низ: 4, 8, 12, _", r:16},
+   {p:"Настави низ: 6, 10, 14, _", r:18},
+   {p:"Настави низ: 8, 12, 16, _", r:20},
+   {p:"Настави низ: 20, 18, 16, _", r:14},
+   {p:"Настави низ: 18, 14, 10, _", r:6},
+   {p:"Настави низ: 1, 3, 5, _", r:7},
+   {p:"Настави низ: 3, 7, 11, _", r:15},
+   {p:"Настави низ: 5, 9, 13, _", r:17},
+   {p:"Настави низ: 9, 11, 13, _", r:15},
+   {p:"Настави низ: 19, 17, 15, _", r:13},
+   {p:"Настави низ: 17, 13, 9, _", r:5},
+   {p:"Настави низ: 7, 11, 15, _", r:19}
+  ];
+
+  let izbor;
+  do{
+   izbor=nizovi[rand(0,nizovi.length-1)];
+  }while(usedSequences.has(izbor.p));
+
+  usedSequences.add(izbor.p);
+
+  correctAnswer=izbor.r;
+  текст+=izbor.p;
  }
 
  if(tip===9){
-  let start=rand(16,20);
-  correctAnswer=start-6;
-  текст+="Настави низ: "+start+", "+(start-2)+", "+(start-4)+", _";
- }
-
- if(tip===10){
-  let start=rand(6,10);
-  correctAnswer=start+9;
-  текст+="Настави низ: "+start+", "+(start+3)+", "+(start+6)+", _";
- }
-
- if(tip===11){
   let a=rand(12,20), b=rand(12,20);
   if(a>b) correctAnswer=">";
   if(a<b) correctAnswer="<";
@@ -236,7 +249,7 @@ function nextQuestion(){
 
  document.getElementById("odg").addEventListener("keydown",function(e){
    if(e.key==="Enter" && !locked){
-       checkAnswer();
+     checkAnswer();
    }
  });
 
