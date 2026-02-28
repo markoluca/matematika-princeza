@@ -3,254 +3,285 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Matematika Princeza PRO</title>
+<title>Математичка Принцеза</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#ff69b4">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 body{
-font-family:Arial;
-text-align:center;
-background:linear-gradient(#ffd6ec,#ffeaa7);
+font-family:'Arial Rounded MT Bold', Arial, sans-serif;
 margin:0;
-padding:15px;
-}
-h1{color:#e84393;}
-#box{
-background:white;
 padding:20px;
-border-radius:20px;
-max-width:550px;
-margin:auto;
-box-shadow:0 0 20px rgba(0,0,0,0.2);
+text-align:center;
+transition:0.4s;
 }
-button{
-padding:8px;
-margin:4px;
-border-radius:10px;
+
+.rose{background:linear-gradient(#ffe6f2,#fff4cc);}
+.purple{background:linear-gradient(#f3e6ff,#e6ccff);}
+.mint{background:linear-gradient(#e6fff7,#ccfff2);}
+
+h1{color:#d63384;}
+
+.container{max-width:520px;margin:auto;}
+
+.card{
+background:white;
+border-radius:30px;
+padding:25px;
+box-shadow:0 15px 30px rgba(0,0,0,0.15);
+}
+
+.category-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-bottom:15px;
+}
+
+.cat-btn{
+padding:12px;
 border:none;
-background:#ff69b4;
+border-radius:15px;
+font-size:14px;
+font-weight:bold;
+cursor:pointer;
 color:white;
+transition:0.2s;
 }
-select,input{
-padding:6px;
-margin:4px;
+
+.cat-btn:hover{transform:scale(1.05);}
+
+.add{background:#ff6b9d;}
+.sub{background:#845ec2;}
+.first{background:#ffc75f;}
+.second{background:#00c9a7;}
+.prev{background:#ff9671;}
+.compare{background:#4d8076;}
+
+.question{
+font-size:32px;
+margin:20px 0;
 }
-.hidden{display:none;}
-.statBox{
-background:#fff0f6;
+
+input{
+font-size:26px;
 padding:8px;
-margin:5px;
-border-radius:10px;
+width:100px;
+border-radius:15px;
+border:3px solid #ccc;
+text-align:center;
 }
+
+.correct{border-color:#28a745;}
+.wrong{border-color:#dc3545;}
+
+.feedback{height:24px;font-weight:bold;}
+
+.progress{
+height:12px;
+background:#eee;
+border-radius:20px;
+margin-top:10px;
+overflow:hidden;
+}
+
+.progress-bar{
+height:12px;
+background:#ff69b4;
+width:0%;
+transition:0.4s;
+}
+
+.badges{margin-top:10px;font-size:20px;}
+.map{margin-top:10px;font-size:18px;}
+
+.theme-select{margin-bottom:10px;}
 </style>
 </head>
-<body>
 
-<h1>👑 Matematika Princeza PRO</h1>
+<body class="rose">
 
-<div id="box">
+<h1>👑 Математичка Принцеза</h1>
 
-<input type="text" id="player" placeholder="Ime deteta">
-<button onclick="start()">Počni</button>
+<div class="container">
+<div class="card">
 
-<div id="game" class="hidden">
+<input type="text" id="ime" placeholder="Унеси име">
+<button onclick="sacuvajIme()">Сачувај</button>
 
-<select id="category">
-<option value="add">Sabiranje</option>
-<option value="sub">Oduzimanje</option>
-<option value="first10">Prva desetica</option>
-<option value="second10">Druga desetica</option>
-<option value="prev">Prethodnik</option>
-<option value="next">Sledbenik</option>
-<option value="compare">Veće/Manje/Jednako</option>
+<h3 id="pozdrav"></h3>
+
+<div class="theme-select">
+Тема:
+<select onchange="promeniTemu(this.value)">
+<option value="rose">Розе</option>
+<option value="purple">Љубичаста</option>
+<option value="mint">Минт</option>
 </select>
-
-<select id="difficulty">
-<option value="easy">Lak</option>
-<option value="medium">Srednji</option>
-<option value="hard">Težak</option>
-</select>
-
-<button onclick="generate()">Novi zadatak</button>
-
-<h2 id="question"></h2>
-<input type="text" id="answer">
-<br>
-<button onclick="check()">Proveri</button>
-
-<p id="result"></p>
-<p>Zvezdice: <span id="stars">0</span> ⭐</p>
-<p>Medalja: <span id="medal">-</span></p>
-
-<hr>
-<button onclick="openParent()">Roditeljski panel 🔐</button>
-
 </div>
 
-<div id="parent" class="hidden">
-<input type="password" id="pin" placeholder="PIN">
-<button onclick="enterParent()">Uđi</button>
-
-<div id="stats" class="hidden">
-<canvas id="chart"></canvas>
-<div id="categoryStats"></div>
+<div class="category-grid">
+<button class="cat-btn add" onclick="setCategory('add')">Сабирање</button>
+<button class="cat-btn sub" onclick="setCategory('sub')">Одузимање</button>
+<button class="cat-btn first" onclick="setCategory('first10')">Прва десетица</button>
+<button class="cat-btn second" onclick="setCategory('second10')">Друга десетица</button>
+<button class="cat-btn prev" onclick="setCategory('prevnext')">Претходник/Следб.</button>
+<button class="cat-btn compare" onclick="setCategory('compare')">Упореди</button>
 </div>
-</div>
 
+<div class="question" id="question"></div>
+<input type="text" id="answer" oninput="checkAnswer()">
+
+<div class="feedback" id="feedback"></div>
+
+<p>Звездице: <span id="stars">0</span> ⭐ | Ниво: <span id="level">1</span></p>
+
+<div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+
+<div class="badges" id="badges"></div>
+<div class="map" id="map"></div>
+
+</div>
 </div>
 
 <script>
-let player="";
+let category="add";
 let correct;
-let stars=0;
-let today=new Date().toLocaleDateString();
-const PIN="1234";
+let stars=parseInt(localStorage.getItem("stars")||0);
+let level=parseInt(localStorage.getItem("level")||1);
+let correctStreak=0;
+let wrongStreak=0;
+let difficulty=1;
 
-function start(){
-player=document.getElementById("player").value;
-if(player==="") return;
-document.getElementById("game").classList.remove("hidden");
-loadData();
-generate();
+ucitaj();
+
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+
+function sacuvajIme(){
+let ime=document.getElementById("ime").value;
+localStorage.setItem("ime",ime);
+document.getElementById("pozdrav").innerText="Добро дошла, "+ime+" 👑";
 }
 
-function loadData(){
-stars=parseInt(localStorage.getItem(player+"_stars")||0);
+function ucitaj(){
+let ime=localStorage.getItem("ime");
+if(ime) document.getElementById("pozdrav").innerText="Добро дошла, "+ime+" 👑";
+updateUI();
+}
+
+function promeniTemu(t){
+document.body.className=t;
+}
+
+function setCategory(cat){category=cat;newTask();}
+
+function updateUI(){
 document.getElementById("stars").innerText=stars;
-updateMedal();
+document.getElementById("level").innerText=level;
+document.getElementById("progressBar").style.width=(stars%10)*10+"%";
+updateBadges();
+updateMap();
 }
 
-function random(min,max){
-return Math.floor(Math.random()*(max-min+1))+min;
+function updateBadges(){
+let html="";
+for(let i=0;i<Math.floor(stars/10);i++) html+="👑 ";
+document.getElementById("badges").innerHTML=html;
 }
 
-function generate(){
-let cat=document.getElementById("category").value;
-let diff=document.getElementById("difficulty").value;
+function updateMap(){
+let html="Напредак: ";
+for(let i=1;i<=10;i++) html+= i<=level?"⭐ ":"☆ ";
+document.getElementById("map").innerHTML=html;
+}
 
-let max= diff==="easy"?10:20;
+function adjustDifficulty(){
+if(correctStreak>=3 && difficulty<3){difficulty++;correctStreak=0;}
+if(wrongStreak>=2 && difficulty>1){difficulty--;wrongStreak=0;}
+}
 
-if(cat==="add"){
-let a=random(0,max);
-let b=random(0,max);
-if(a+b>20) return generate();
+function newTask(){
+let max=difficulty===1?10:20;
+let q="";
+
+if(category==="add"){
+let a=rand(0,max),b=rand(0,max);
+if(a+b>20) return newTask();
 correct=a+b;
-document.getElementById("question").innerText=`${a} + ${b} = ?`;
+q=`${a} + ${b} = ?`;
 }
 
-if(cat==="sub"){
-let a=random(0,max);
-let b=random(0,max);
+if(category==="sub"){
+let a=rand(0,max),b=rand(0,max);
 if(b>a)[a,b]=[b,a];
 correct=a-b;
-document.getElementById("question").innerText=`${a} - ${b} = ?`;
+q=`${a} - ${b} = ?`;
 }
 
-if(cat==="first10"){
-correct=random(0,9);
-document.getElementById("question").innerText="Unesi broj iz prve desetice:";
+if(category==="first10"){
+let s=difficulty===1?rand(0,5):rand(0,7);
+correct=s+2;
+q=`${s}, ${s+1}, __ , ${s+3}`;
 }
 
-if(cat==="second10"){
-correct=random(10,19);
-document.getElementById("question").innerText="Unesi broj iz druge desetice:";
+if(category==="second10"){
+let s=difficulty===1?rand(10,15):rand(10,17);
+correct=s+2;
+q=`${s}, ${s+1}, __ , ${s+3}`;
 }
 
-if(cat==="prev"){
-let a=random(1,20);
-correct=a-1;
-document.getElementById("question").innerText=`Prethodnik broja ${a}?`;
+if(category==="prevnext"){
+let n=difficulty===1?rand(2,10):rand(5,18);
+correct=n-1;
+q=`__, ${n}, ${n+1}`;
 }
 
-if(cat==="next"){
-let a=random(0,19);
-correct=a+1;
-document.getElementById("question").innerText=`Sledbenik broja ${a}?`;
-}
-
-if(cat==="compare"){
-let a=random(0,20);
-let b=random(0,20);
+if(category==="compare"){
+let a=rand(0,max),b=rand(0,max);
 correct=a>b?">":a<b?"<":"=";
-document.getElementById("question").innerText=`${a} ? ${b}`;
-}
+q=`${a} ? ${b}`;
 }
 
-function check(){
+document.getElementById("question").innerText=q;
+document.getElementById("answer").value="";
+document.getElementById("feedback").innerText="";
+document.getElementById("answer").className="";
+}
+
+function checkAnswer(){
 let user=document.getElementById("answer").value;
 
 if(user==correct){
 stars++;
-document.getElementById("result").innerText="Bravo princezo! 🌸";
-saveStats(true);
+correctStreak++;
+wrongStreak=0;
+
+if(stars%30===0){
+level++;
+alert("Браво! Нови ниво 🎉");
+}
+
+localStorage.setItem("stars",stars);
+localStorage.setItem("level",level);
+
+adjustDifficulty();
+updateUI();
+
+document.getElementById("answer").className="correct";
+document.getElementById("feedback").innerText="Браво! 🌸";
+
+setTimeout(newTask,800);
 }else{
-document.getElementById("result").innerText="Pokušaj ponovo.";
-saveStats(false);
-}
-
-localStorage.setItem(player+"_stars",stars);
-document.getElementById("stars").innerText=stars;
-updateMedal();
-document.getElementById("answer").value="";
-generate();
-}
-
-function updateMedal(){
-let medal="-";
-if(stars>=10) medal="🥉";
-if(stars>=25) medal="🥈";
-if(stars>=50) medal="🥇";
-document.getElementById("medal").innerText=medal;
-}
-
-function saveStats(success){
-let key=player+"_day_"+today;
-let val=parseInt(localStorage.getItem(key)||0);
-if(success) val++;
-localStorage.setItem(key,val);
-}
-
-function openParent(){
-document.getElementById("parent").classList.remove("hidden");
-}
-
-function enterParent(){
-if(document.getElementById("pin").value===PIN){
-showChart();
-showCategoryStats();
-document.getElementById("stats").classList.remove("hidden");
+wrongStreak++;
+correctStreak=0;
+adjustDifficulty();
+document.getElementById("answer").className="wrong";
+document.getElementById("feedback").innerText="Покушај поново";
 }
 }
 
-function showChart(){
-let labels=[];
-let data=[];
-for(let i=6;i>=0;i--){
-let d=new Date();
-d.setDate(d.getDate()-i);
-let ds=d.toLocaleDateString();
-labels.push(ds);
-data.push(parseInt(localStorage.getItem(player+"_day_"+ds)||0));
-}
-
-new Chart(document.getElementById("chart"),{
-type:"bar",
-data:{labels:labels,datasets:[{label:"Tačni odgovori",data:data}]}
-});
-}
-
-function showCategoryStats(){
-let container=document.getElementById("categoryStats");
-container.innerHTML="";
-let cats=["add","sub","first10","second10","prev","next","compare"];
-cats.forEach(c=>{
-let val=parseInt(localStorage.getItem(player+"_"+c)||0);
-container.innerHTML+=`<div class="statBox">${c}: ${val}</div>`;
-});
-}
+newTask();
 
 if("serviceWorker" in navigator){
 navigator.serviceWorker.register("service-worker.js");
