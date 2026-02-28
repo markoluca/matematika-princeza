@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Математичка Принцеза – Тест</title>
+<title>Математичка Принцеза</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#ff69b4">
 
 <style>
 body{
-font-family:'Arial Rounded MT Bold', Arial, sans-serif;
+font-family:Arial, sans-serif;
 background:linear-gradient(#ffe6f2,#fff4cc);
 margin:0;
 padding:20px;
@@ -19,37 +19,37 @@ text-align:center;
 
 h1{color:#d63384;}
 
-.container{max-width:520px;margin:auto;}
-
 .card{
+max-width:600px;
+margin:auto;
 background:white;
-border-radius:30px;
 padding:25px;
+border-radius:25px;
 box-shadow:0 15px 30px rgba(0,0,0,0.15);
 }
 
 button{
 padding:10px 15px;
+margin:5px;
 border:none;
 border-radius:12px;
-font-weight:bold;
-cursor:pointer;
 background:#ff69b4;
 color:white;
-margin:5px;
+font-weight:bold;
+cursor:pointer;
 }
 
 .question{
-font-size:28px;
+font-size:26px;
 margin:20px 0;
 min-height:40px;
 }
 
 input{
-font-size:26px;
+font-size:24px;
 padding:8px;
 width:100px;
-border-radius:15px;
+border-radius:12px;
 border:3px solid #ccc;
 text-align:center;
 }
@@ -65,12 +65,14 @@ padding:15px;
 background:#fff0f6;
 border-radius:15px;
 display:none;
+text-align:left;
 }
 
-.history{
-margin-top:15px;
-font-size:14px;
-text-align:left;
+.mistake{
+background:#ffe0e0;
+padding:8px;
+margin:5px 0;
+border-radius:8px;
 }
 </style>
 </head>
@@ -79,10 +81,16 @@ text-align:left;
 
 <h1>👑 Математичка Принцеза</h1>
 
-<div class="container">
 <div class="card">
 
-<button onclick="startTest()">Покрени тест (20 задатака)</button>
+<div>
+<button onclick="startPractice('add')">Сабирање</button>
+<button onclick="startPractice('sub')">Одузимање</button>
+<button onclick="startPractice('numbers20')">Бројеви 1–20</button>
+<button onclick="startPractice('prevnext')">Претходник / Следбеник</button>
+<button onclick="startPractice('compare')">Упореди</button>
+<button onclick="startTest()">ТЕСТ (20)</button>
+</div>
 
 <div class="question" id="question"></div>
 
@@ -92,57 +100,71 @@ text-align:left;
 
 <div class="result-box" id="resultBox"></div>
 
-<div class="history" id="history"></div>
-
-</div>
 </div>
 
 <script>
+let mode="practice";
+let category="";
 let correct;
+let currentQuestionText="";
+
 let testCount=0;
 let testCorrect=0;
-let totalQuestions=20;
-let activeTest=false;
+let mistakes=[];
+const TOTAL_TEST=20;
 
 function rand(min,max){
 return Math.floor(Math.random()*(max-min+1))+min;
 }
 
+function startPractice(cat){
+mode="practice";
+category=cat;
+document.getElementById("resultBox").style.display="none";
+newTask();
+}
+
 function startTest(){
+mode="test";
 testCount=0;
 testCorrect=0;
-activeTest=true;
+mistakes=[];
 document.getElementById("resultBox").style.display="none";
-document.getElementById("feedback").innerText="";
 newTask();
 }
 
 function newTask(){
 
-if(testCount>=totalQuestions){
+if(mode==="test" && testCount>=TOTAL_TEST){
 endTest();
 return;
 }
 
-let types=["add","sub","numbers","prevnext","compare"];
-let type=types[rand(0,types.length-1)];
 let q="";
+let type;
+
+if(mode==="test"){
+let all=["add","sub","numbers20","prevnext","compare"];
+type=all[rand(0,all.length-1)];
+}else{
+type=category;
+}
 
 if(type==="add"){
-let a=rand(0,20), b=rand(0,20);
+let a=rand(0,20),b=rand(0,20);
 if(a+b>20) return newTask();
 correct=a+b;
 q=`${a} + ${b} = ?`;
 }
 
 if(type==="sub"){
-let a=rand(0,20), b=rand(0,20);
+let a=rand(0,20),b=rand(0,20);
 if(b>a)[a,b]=[b,a];
 correct=a-b;
 q=`${a} - ${b} = ?`;
 }
 
-if(type==="numbers"){
+if(type==="numbers20"){
 let s=rand(1,17);
 correct=s+2;
 q=`${s}, ${s+1}, __ , ${s+3}`;
@@ -155,30 +177,51 @@ q=`__, ${n}, ${n+1}`;
 }
 
 if(type==="compare"){
-let a=rand(0,20), b=rand(0,20);
+let a=rand(0,20),b=rand(0,20);
 correct=a>b?">":a<b?"<":"=";
 q=`${a} ? ${b}`;
 }
 
+currentQuestionText=q;
+
+if(mode==="test"){
 document.getElementById("question").innerText=
 `Задатак ${testCount+1}/20: ${q}`;
+}else{
+document.getElementById("question").innerText=q;
+}
 
 document.getElementById("answer").value="";
+document.getElementById("feedback").innerText="";
 }
 
 function checkAnswer(){
-if(!activeTest) return;
-
 let user=document.getElementById("answer").value;
+if(user==="") return;
 
 if(user==correct){
+
+if(mode==="test"){
 testCorrect++;
-document.getElementById("feedback").innerText="Браво! 🌸";
+testCount++;
 }else{
-document.getElementById("feedback").innerText="Нетачно";
 }
 
+document.getElementById("feedback").innerText="Браво! 🌸";
+
+}else{
+
+if(mode==="test"){
+mistakes.push({
+question: currentQuestionText,
+user: user,
+correct: correct
+});
 testCount++;
+}
+
+document.getElementById("feedback").innerText="Нетачно";
+}
 
 setTimeout(()=>{
 document.getElementById("feedback").innerText="";
@@ -187,46 +230,43 @@ newTask();
 }
 
 function endTest(){
-activeTest=false;
 
-let percent=Math.round((testCorrect/20)*100);
+let percent=Math.round((testCorrect/TOTAL_TEST)*100);
 let message="";
 
 if(percent>=90) message="Одлично! 👑";
 else if(percent>=70) message="Врло добро! 🌟";
 else message="Вежбај још 💪";
 
-document.getElementById("resultBox").style.display="block";
-document.getElementById("resultBox").innerHTML=`
+let html=`
 <h3>Резултат теста</h3>
 <p>${testCorrect} / 20</p>
 <p>${percent}%</p>
-<p>${message}</p>
-<button onclick="startTest()">Понови тест</button>
+<p><b>${message}</b></p>
 `;
 
-saveResult(testCorrect,percent);
-loadHistory();
-}
-
-function saveResult(score,percent){
-let history=JSON.parse(localStorage.getItem("testHistory")||"[]");
-let date=new Date().toLocaleDateString();
-history.unshift({date:date,score:score,percent:percent});
-if(history.length>10) history.pop();
-localStorage.setItem("testHistory",JSON.stringify(history));
-}
-
-function loadHistory(){
-let history=JSON.parse(localStorage.getItem("testHistory")||"[]");
-let html="<h4>Последњи резултати:</h4>";
-history.forEach(h=>{
-html+=`<div>${h.date} – ${h.score}/20 (${h.percent}%)</div>`;
+if(mistakes.length>0){
+html+="<h4>Погрешни задаци:</h4>";
+mistakes.forEach(m=>{
+html+=`
+<div class="mistake">
+Задатак: ${m.question}<br>
+Твој одговор: ${m.user}<br>
+Тачно решење: ${m.correct}
+</div>
+`;
 });
-document.getElementById("history").innerHTML=html;
+}else{
+html+="<p>Сви задаци су тачни! 👑</p>";
 }
 
-loadHistory();
+html+=`<button onclick="startTest()">Понови тест</button>`;
+
+document.getElementById("resultBox").style.display="block";
+document.getElementById("resultBox").innerHTML=html;
+}
+
+newTask();
 
 if("serviceWorker" in navigator){
 navigator.serviceWorker.register("service-worker.js");
